@@ -7,7 +7,7 @@ body {
   min-height: 100vh;
   padding: 16px;
 }
-.wrap { max-width: 700px; margin: 0 auto; }
+.wrap { max-width: 900px; margin: 0 auto; }
 header { text-align: center; margin-bottom: 16px; }
 header h1 { font-size: 22px; margin: 0 0 4px; }
 header p { margin: 0; color: #64748b; font-size: 13px; }
@@ -70,14 +70,21 @@ select {
 .timer { color: #2563eb; }
 .piece-count { color: #64748b; font-weight: 500; }
 
+.game-area {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  align-items: center;
+}
+
 #board {
   display: grid;
   gap: 0;
   background: #cbd5e1;
-  margin: 0 auto 14px;
   border-radius: 8px;
   border: 3px solid #94a3b8;
   position: relative;
+  flex-shrink: 0;
 }
 .cell {
   background-color: transparent;
@@ -100,6 +107,21 @@ select {
   background: #f8fafc;
   border-radius: 10px;
   min-height: 60px;
+  width: 100%;
+}
+
+/* จอกว้างพอ: วางถาดชิ้นส่วนไว้ด้านขวาของกระดาน เห็นพร้อมกันไม่ต้องเลื่อน */
+@media (min-width: 720px) {
+  .game-area { flex-direction: row; align-items: flex-start; justify-content: center; }
+  #tray {
+    flex: 1 1 220px;
+    max-width: 260px;
+    flex-direction: column;
+    align-content: flex-start;
+    align-items: center;
+    max-height: 75vh;
+    overflow-y: auto;
+  }
 }
 
 .piece-svg {

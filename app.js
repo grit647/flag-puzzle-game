@@ -88,7 +88,10 @@ async function startGame() {
     return;
   }
 
-  const maxW = Math.min(window.innerWidth - 56, 600);
+  // จอกว้างพอจะวางถาดไว้ข้างๆ กระดาน (ดู style.css @media 720px ขึ้นไป) ต้องเผื่อที่ให้ถาดด้วย
+  const sideBySide = window.innerWidth >= 720;
+  const reserve = sideBySide ? 300 : 56;
+  const maxW = Math.min(window.innerWidth - reserve, 520);
   const boardW = maxW;
   const boardH = Math.round(maxW * (img.naturalHeight / img.naturalWidth));
   state.boardW = boardW;
