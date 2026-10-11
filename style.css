@@ -92,7 +92,9 @@ select {
   position: relative;
   overflow: visible;
 }
-.cell.empty { background-color: #f1f5f9; }
+/* ชิ้นที่วางแล้วต้องอยู่ "บนสุด" เสมอ ไม่งั้นลายทางของช่องว่างข้างๆ จะทับส่วนปุ่ม/ร่องที่ยื่นล้ำเข้ามา มองไม่เห็น */
+.cell.filled { z-index: 2; }
+.cell.empty { background-color: #f1f5f9; z-index: 1; }
 .cell.empty::after {
   content: '';
   position: absolute; inset: 0;

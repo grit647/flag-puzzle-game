@@ -104,9 +104,10 @@ async function startGame() {
   }
 
   // จอกว้างพอจะวางถาดไว้ข้างๆ กระดาน (ดู style.css @media 560px ขึ้นไป) ต้องเผื่อที่ให้ถาดด้วย
+  // ขยายขนาดกระดาน/ชิ้นส่วนให้ใหญ่ขึ้น กดง่ายขึ้นบนมือถือ
   const sideBySide = window.innerWidth >= 560;
-  const reserve = sideBySide ? 280 : 56;
-  const maxW = Math.min(window.innerWidth - reserve, 480);
+  const reserve = sideBySide ? 250 : 36;
+  const maxW = Math.min(window.innerWidth - reserve, 560);
   const boardW = maxW;
   const boardH = Math.round(maxW * (img.naturalHeight / img.naturalWidth));
   state.boardW = boardW;
@@ -297,11 +298,11 @@ function armTrayDrag(e, pieceIndex, flagUrl) {
     resolved = true;
     cleanup();
     beginDrag(e, pieceIndex, null, flagUrl, sourceEl);
-  }, 180);
+  }, 120);
 
   function onMove(ev) {
     if (resolved) return;
-    if (Math.hypot(ev.clientX - startX, ev.clientY - startY) > 10) {
+    if (Math.hypot(ev.clientX - startX, ev.clientY - startY) > 14) {
       resolved = true;
       clearTimeout(holdTimer);
       cleanup();
