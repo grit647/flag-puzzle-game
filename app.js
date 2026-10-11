@@ -241,11 +241,55 @@ function renderTray(flagUrl) {
 }
 
 // ----- ลากวางด้วย Pointer Events (ใช้ได้ทั้งเมาส์และนิ้วบนมือถือ) -----
+// ชิ้นในถาด: ต้อง "กดค้างสักครู่" ก่อนถึงเริ่มลาก (ถ้าปัดเร็วๆ ก่อนครบเวลา ถือว่าจะเลื่อนถาด ไม่ใช่ลากชิ้น)
+// ชิ้นบนกระดาน: เริ่มลากได้ทันที (กระดานไม่ได้เลื่อน ไม่มีอะไรต้องกันชน)
+let pendingDrag = null;
 
 function onPiecePointerDown(e, pieceIndex, fromCellIndex, flagUrl) {
-  if (drag) return;
-  e.preventDefault();
-  const rect = e.currentTarget.getBoundingClientRect();
+  if (drag || pendingDrag) return;
+  if (fromCellIndex === null) {
+    armTrayDrag(e, pieceIndex, flagUrl);
+  } else {
+    beginDrag(e, pieceIndex, fromCellIndex, flagUrl, e.currentTarget);
+  }
+}
+
+function armTrayDrag(e, pieceIndex, flagUrl) {
+  const startX = e.clientX, startY = e.clientY;
+  const sourceEl = e.currentTarget;
+  let resolved = false;
+
+  const holdTimer = setTimeout(() => {
+    if (resolved) return;
+    resolved = true;
+    cleanup();
+    beginDrag(e, pieceIndex, null, flagUrl, sourceEl);
+  }, 180);
+
+  function onMove(ev) {
+    if (resolved) return;
+    if (Math.hypot(ev.clientX - startX, ev.clientY - startY) > 10) {
+      resolved = true;
+      clearTimeout(holdTimer);
+      cleanup();
+    }
+  }
+  function onUp() {
+    if (!resolved) clearTimeout(holdTimer);
+    cleanup();
+  }
+  function cleanup() {
+    window.removeEventListener('pointermove', onMove);
+    window.removeEventListener('pointerup', onUp);
+    pendingDrag = null;
+  }
+  pendingDrag = { pieceIndex };
+  window.addEventListener('pointermove', onMove);
+  window.addEventListener('pointerup', onUp);
+}
+
+function beginDrag(e, pieceIndex, fromCellIndex, flagUrl, sourceEl) {
+  const rect = sourceEl.getBoundingClientRect();
   const ghost = buildPieceSvg(flagUrl, pieceIndex);
   ghost.classList.add('drag-ghost');
   ghost.style.left = `${rect.left}px`;
@@ -262,6 +306,25 @@ function onPiecePointerDown(e, pieceIndex, fromCellIndex, flagUrl) {
 
   window.addEventListener('pointermove', onDragMove);
   window.addEventListener('pointerup', onDragEnd);
+}
+
+// ลากพื้นที่ว่างในถาด (ไม่ได้โดนชิ้น) เพื่อเลื่อนดูชิ้นที่เหลือ — เหมือนลาก touchpad/นิ้วปัด
+function initTrayPanning() {
+  const tray = el('tray');
+  let pan = null;
+  tray.addEventListener('pointerdown', (e) => {
+    if (e.target !== tray) return; // กดโดนชิ้นส่วน ไม่ใช่พื้นที่ว่าง ปล่อยให้ระบบลากชิ้นทำงานแทน
+    pan = { startY: e.clientY, startScroll: tray.scrollTop, pointerId: e.pointerId };
+    tray.classList.add('panning');
+    tray.setPointerCapture(e.pointerId);
+  });
+  tray.addEventListener('pointermove', (e) => {
+    if (!pan || e.pointerId !== pan.pointerId) return;
+    tray.scrollTop = pan.startScroll - (e.clientY - pan.startY);
+  });
+  const endPan = () => { if (pan) { tray.classList.remove('panning'); pan = null; } };
+  tray.addEventListener('pointerup', endPan);
+  tray.addEventListener('pointercancel', endPan);
 }
 
 function onDragMove(e) {
@@ -385,6 +448,7 @@ function renderStats() {
 function init() {
   initCountrySelect();
   initDifficultyButtons();
+  initTrayPanning();
   el('startBtn').addEventListener('click', startGame);
   el('randomCountryBtn').addEventListener('click', () => {
     const c = COUNTRIES[Math.floor(Math.random() * COUNTRIES.length)];
