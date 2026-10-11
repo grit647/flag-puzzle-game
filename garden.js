@@ -28,8 +28,16 @@ const FANTASY_KINDS = [
   { key: 'clover', emoji: '🍀', name: 'โคลเวอร์นำโชค', fantasy: true },
 ];
 
+// ดอกไม้พิเศษ — ปลูกไม่ได้เลย ต้องซื้อด้วยแต้มจากร้านค้าเท่านั้น (ไม่อยู่ใน randomKind())
+const SHOP_KINDS = [
+  { key: 'lavender', emoji: '🪻', name: 'ลาเวนเดอร์', price: 30, shop: true },
+  { key: 'maluka', emoji: '💮', name: 'มะลุก้า', price: 30, shop: true },
+  { key: 'lotus', emoji: '🪷', name: 'ดอกบัว', price: 30, shop: true },
+];
+
 const NORMAL_KINDS = [...FLOWER_KINDS, ...TREE_KINDS];
 const ALL_KINDS = [...FLOWER_KINDS, ...TREE_KINDS, ...FANTASY_KINDS];
+const EVERYTHING_KINDS = [...ALL_KINDS, ...SHOP_KINDS]; // ใช้ตอนโชว์รีวิวสวน/ขาย รวมของร้านค้าด้วย
 const FANTASY_CHANCE = 0.15; // โอกาสได้ของแฟนตาซีหายาก 15%
 
 // แต่ละช่อง: null = ว่าง, หรือ { stage: 1|2|3, kind }
@@ -210,7 +218,36 @@ function renderCollection() {
   renderCollectionGroup('collectionRow', FLOWER_KINDS);
   renderCollectionGroup('treeCollectionRow', TREE_KINDS);
   renderCollectionGroup('fantasyCollectionRow', FANTASY_KINDS);
+  renderShopRow();
   updatePointsDisplay();
+}
+
+// ร้านดอกไม้พิเศษ — ซื้อได้อย่างเดียว ไม่มีทางปลูกเองหรือสุ่มได้จากที่อื่น
+function renderShopRow() {
+  const row = el('shopRow');
+  if (!row) return;
+  row.innerHTML = '';
+  SHOP_KINDS.forEach((kind) => {
+    const owned = collection[kind.key] || 0;
+    const chip = document.createElement('div');
+    chip.className = 'collection-chip';
+    chip.innerHTML = `<span class="emoji">${kind.emoji}</span><span>${kind.name} × ${owned}</span>`;
+    const buyBtn = document.createElement('button');
+    buyBtn.className = 'sell-btn buy-btn';
+    buyBtn.textContent = `ซื้อ ${kind.price}💰`;
+    buyBtn.disabled = points < kind.price;
+    buyBtn.addEventListener('click', () => buyShopFlower(kind));
+    chip.appendChild(buyBtn);
+    row.appendChild(chip);
+  });
+}
+
+function buyShopFlower(kind) {
+  if (points < kind.price) return;
+  points -= kind.price;
+  collection[kind.key] = (collection[kind.key] || 0) + 1;
+  saveState();
+  renderCollection();
 }
 
 function updatePointsDisplay() {
@@ -348,7 +385,7 @@ function openReviewGarden() {
   const emptyMsg = el('reviewEmptyMsg');
   content.innerHTML = '';
   let any = false;
-  ALL_KINDS.forEach((kind) => {
+  EVERYTHING_KINDS.forEach((kind) => {
     const count = collection[kind.key] || 0;
     const showCount = Math.min(count, 14); // กันล้นจอถ้าเก็บเยอะมาก
     for (let i = 0; i < showCount; i++) {

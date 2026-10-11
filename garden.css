@@ -27,6 +27,8 @@
   cursor: pointer;
 }
 .sell-btn:disabled { background: #cbd5e1; color: #94a3b8; cursor: not-allowed; }
+.buy-btn { background: #db2777; }
+.buy-btn:disabled { background: #cbd5e1; color: #94a3b8; }
 
 .garden-scene {
   position: relative;
