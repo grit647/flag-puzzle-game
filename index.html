@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>เกมต่อจิ๊กซอธงชาติ</title>
+<title>รวมเกม</title>
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
@@ -13,9 +13,17 @@
 <body>
 <div class="wrap">
   <header>
-    <h1>🧩 เกมต่อจิ๊กซอธงชาติ</h1>
-    <p>เลือกประเทศ เลือกระดับความยาก แล้วลากต่อให้ครบ!</p>
+    <h1 id="pageTitle">🧩 เกมต่อจิ๊กซอธงชาติ</h1>
+    <p id="pageSubtitle">เลือกประเทศ เลือกระดับความยาก แล้วลากต่อให้ครบ!</p>
   </header>
+
+  <div class="panel">
+    <label style="display:block; margin-bottom:8px;">🎮 เลือกเกม:</label>
+    <div class="row" id="gameSelectRow">
+      <button class="game-select-btn active" data-game="flag-jigsaw">🧩 ต่อจิ๊กซอธงชาติ</button>
+      <button class="game-select-btn" disabled title="กำลังทยอยสร้างเพิ่มครับ">➕ เกมใหม่ (เร็วๆ นี้)</button>
+    </div>
+  </div>
 
   <div class="panel">
     <div class="row">

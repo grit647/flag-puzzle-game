@@ -46,6 +46,21 @@ select {
 }
 .diff-btn.active { border-color: #2563eb; color: #2563eb; background: #eff6ff; }
 
+.game-select-btn {
+  flex: 1;
+  min-width: 140px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 2px solid #cbd5e1;
+  background: #fff;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 700;
+  color: #475569;
+}
+.game-select-btn.active { border-color: #2563eb; color: #2563eb; background: #eff6ff; }
+.game-select-btn:disabled { opacity: 0.5; cursor: not-allowed; color: #94a3b8; }
+
 .btn {
   padding: 9px 16px;
   border-radius: 8px;
