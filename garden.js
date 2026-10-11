@@ -361,6 +361,20 @@ function spawnMeteor() {
   meteor.style.animationDuration = `${0.7 + Math.random() * 0.5}s`;
   sky.appendChild(meteor);
   meteor.addEventListener('animationend', () => meteor.remove());
+  trySkyBlessing();
+}
+
+// ถ้ามีต้นไม้/ดอกไม้กำลังปลูกอยู่ ดาวตกมีโอกาส 50% "โดน" ต้นนั้น กลายเป็นของทอง/สายรุ้งทันที!
+const METEOR_BLESS_CHANCE = 0.5;
+const METEOR_BLESS_RAINBOW_SHARE = 0.25; // ในบรรดาต้นที่โดนอวยพร 25% ได้สายรุ้ง ที่เหลือได้ทอง
+
+function trySkyBlessing() {
+  const plantedIndexes = plots.map((p, i) => (p ? i : -1)).filter((i) => i !== -1);
+  if (plantedIndexes.length === 0) return;
+  if (Math.random() >= METEOR_BLESS_CHANCE) return;
+  const idx = plantedIndexes[Math.floor(Math.random() * plantedIndexes.length)];
+  plots[idx].variant = Math.random() < METEOR_BLESS_RAINBOW_SHARE ? 'rainbow' : 'gold';
+  renderGrid();
 }
 
 function maybeSpawnMeteor() {
