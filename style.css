@@ -101,38 +101,49 @@ select {
   background: repeating-linear-gradient(45deg, #e2e8f0, #e2e8f0 4px, #f1f5f9 4px, #f1f5f9 8px);
 }
 
+/* มือถือ/จอแคบ: ถาดเป็นแถวแนวนอนด้านล่างกระดาน เลื่อนซ้าย-ขวาหา (จำนวนแถวขึ้นกับระดับความยาก
+   ง่าย=1 แถว, กลาง=2 แถว, ยาก=3 แถว — ตั้งค่าจาก JS ผ่าน --tray-rows) */
 #tray {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-auto-flow: column;
+  grid-template-rows: repeat(var(--tray-rows, 1), auto);
   gap: 10px;
-  justify-content: center;
   padding: 14px;
   background: #f8fafc;
   border-radius: 10px;
   min-height: 60px;
   width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  justify-content: start;
+  align-items: center;
+  cursor: grab;
 }
+#tray.panning { cursor: grabbing; }
 
-/* จอกว้างพอ: วางถาดชิ้นส่วนไว้ด้านขวาของกระดาน เห็นพร้อมกันไม่ต้องเลื่อน */
+/* จอกว้างพอ: วางถาดชิ้นส่วนไว้ด้านขวาของกระดาน เลื่อนขึ้น-ลงแทน เห็นพร้อมกันไม่ต้องเลื่อนทั้งหน้า */
 @media (min-width: 560px) {
   .game-area { flex-direction: row; align-items: flex-start; justify-content: center; }
   #tray {
-    flex: 1 1 220px;
-    max-width: 260px;
+    display: flex;
     flex-direction: column;
     flex-wrap: nowrap;
+    flex: 1 1 220px;
+    max-width: 260px;
     align-items: center;
     max-height: 75vh;
+    overflow-x: hidden;
     overflow-y: auto;
-    cursor: grab;
   }
-  #tray.panning { cursor: grabbing; }
 }
 
 .piece-svg {
-  touch-action: pan-y;
+  touch-action: pan-x;
   cursor: grab;
   display: block;
+}
+@media (min-width: 560px) {
+  .piece-svg { touch-action: pan-y; }
 }
 .piece-svg.piece-on-board { touch-action: none; }
 .piece-svg.piece-on-board {

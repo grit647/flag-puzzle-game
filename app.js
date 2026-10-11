@@ -5,6 +5,8 @@ const DIFFICULTIES = {
   hard:   { cols: 6, rows: 5, label: 'ยาก (30 ชิ้น)' },
 };
 const STATS_KEY = 'flagPuzzleStats_v1';
+// จำนวนแถวของถาดชิ้นส่วนตอนแสดงเป็นแถวแนวนอน (มือถือ/จอแคบ) — ยิ่งชิ้นเยอะ ยิ่งใช้หลายแถว เลื่อนน้อยลง
+const TRAY_ROWS = { easy: 1, medium: 2, hard: 3 };
 const SVGNS = 'http://www.w3.org/2000/svg';
 
 let state = {
@@ -129,6 +131,7 @@ async function startGame() {
   state.flagUrl = flagUrl;
   el('gamePanel').style.display = 'block';
   el('statsPanel').style.display = 'none';
+  el('tray').style.setProperty('--tray-rows', TRAY_ROWS[state.diffKey]);
   renderBoard(flagUrl);
   renderTray(flagUrl);
   updateTimerDisplay();
@@ -355,18 +358,24 @@ function beginDrag(e, pieceIndex, fromCellIndex, flagUrl, sourceEl) {
 }
 
 // ลากพื้นที่ว่างในถาด (ไม่ได้โดนชิ้น) เพื่อเลื่อนดูชิ้นที่เหลือ — เหมือนลาก touchpad/นิ้วปัด
+// รองรับทั้งแนวนอน (มือถือ/จอแคบ) และแนวตั้ง (จอกว้าง ถาดอยู่ข้างกระดาน)
 function initTrayPanning() {
   const tray = el('tray');
   let pan = null;
   tray.addEventListener('pointerdown', (e) => {
     if (e.target !== tray) return; // กดโดนชิ้นส่วน ไม่ใช่พื้นที่ว่าง ปล่อยให้ระบบลากชิ้นทำงานแทน
-    pan = { startY: e.clientY, startScroll: tray.scrollTop, pointerId: e.pointerId };
+    pan = {
+      startX: e.clientX, startY: e.clientY,
+      startLeft: tray.scrollLeft, startTop: tray.scrollTop,
+      pointerId: e.pointerId,
+    };
     tray.classList.add('panning');
     tray.setPointerCapture(e.pointerId);
   });
   tray.addEventListener('pointermove', (e) => {
     if (!pan || e.pointerId !== pan.pointerId) return;
-    tray.scrollTop = pan.startScroll - (e.clientY - pan.startY);
+    tray.scrollLeft = pan.startLeft - (e.clientX - pan.startX);
+    tray.scrollTop = pan.startTop - (e.clientY - pan.startY);
   });
   const endPan = () => { if (pan) { tray.classList.remove('panning'); pan = null; } };
   tray.addEventListener('pointerup', endPan);
