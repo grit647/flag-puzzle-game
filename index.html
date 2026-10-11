@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>เกมต่อจิ๊กซอธงชาติ</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>🧩 เกมต่อจิ๊กซอธงชาติ</h1>
+    <p>เลือกประเทศ เลือกระดับความยาก แล้วลากต่อให้ครบ!</p>
+  </header>
+
+  <div class="panel">
+    <div class="row">
+      <label>ประเทศ:</label>
+      <select id="countrySelect"></select>
+      <button class="btn ghost" id="randomCountryBtn">🎲 สุ่ม</button>
+    </div>
+    <div class="row">
+      <label style="width:100%;">ระดับความยาก:</label>
+    </div>
+    <div class="row">
+      <button class="diff-btn" data-diff="easy">ง่าย (8 ชิ้น)</button>
+      <button class="diff-btn" data-diff="medium">กลาง (16 ชิ้น)</button>
+      <button class="diff-btn" data-diff="hard">ยาก (30 ชิ้น)</button>
+    </div>
+    <div class="row" style="margin-top:14px;">
+      <button class="btn" id="startBtn" style="flex:1;">▶️ เริ่มเกม</button>
+      <button class="btn secondary" id="statsBtn">🏆 สถิติ</button>
+    </div>
+  </div>
+
+  <div class="panel" id="gamePanel" style="display:none;">
+    <div class="status-bar">
+      <span class="timer" id="timerDisplay">⏱ 00:00</span>
+      <span class="piece-count" id="pieceCountDisplay"></span>
+    </div>
+    <div id="board"></div>
+    <div class="hint">แตะชิ้นส่วนด้านล่างเพื่อเลือก แล้วแตะช่องว่างบนกระดานเพื่อวาง (แตะชิ้นบนกระดานเพื่อเอาคืน)</div>
+    <div id="tray"></div>
+  </div>
+
+  <div class="panel" id="statsPanel" style="display:none;">
+    <h3 style="margin-top:0;">🏆 สถิติที่ดีที่สุด</h3>
+    <div id="statsContent"></div>
+  </div>
+
+  <footer>เล่นได้ฟรี ไม่เก็บข้อมูลขึ้นเซิร์ฟเวอร์ — สถิติบันทึกไว้ในเครื่องนี้เท่านั้น</footer>
+</div>
+
+<div class="modal-overlay" id="winModal" style="display:none;">
+  <div class="modal-box">
+    <h2>🎉 สำเร็จ!</h2>
+    <p id="winCountryLabel"></p>
+    <div class="big-time" id="winTimeLabel"></div>
+    <p id="winBestLabel" class="new-best"></p>
+    <button class="btn" id="winCloseBtn" style="margin-top:12px; width:100%;">เล่นต่อ</button>
+  </div>
+</div>
+
+<script src="countries.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
