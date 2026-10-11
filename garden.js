@@ -105,10 +105,45 @@ function renderCollection() {
   });
 }
 
+// สร้างดาวสุ่มตำแหน่งไว้ในท้องฟ้า (โชว์เฉพาะตอนกลางคืน)
+function initStars() {
+  const starsEl = el('starsEl');
+  if (!starsEl) return;
+  for (let i = 0; i < 18; i++) {
+    const star = document.createElement('span');
+    star.textContent = '✦';
+    star.style.left = `${Math.random() * 96}%`;
+    star.style.top = `${Math.random() * 80}%`;
+    star.style.animationDelay = `${Math.random() * 2.4}s`;
+    starsEl.appendChild(star);
+  }
+}
+
+function initDayNightToggle() {
+  const scene = el('gardenScene');
+  const btn = el('daynightBtn');
+  if (!scene || !btn) return;
+  const saved = localStorage.getItem('gardenDayNight');
+  if (saved === 'night') scene.classList.add('night');
+  updateDayNightBtnLabel();
+
+  btn.addEventListener('click', () => {
+    scene.classList.toggle('night');
+    localStorage.setItem('gardenDayNight', scene.classList.contains('night') ? 'night' : 'day');
+    updateDayNightBtnLabel();
+  });
+
+  function updateDayNightBtnLabel() {
+    btn.textContent = scene.classList.contains('night') ? '☀️ กลางวัน' : '🌙 กลางคืน';
+  }
+}
+
 function init() {
   loadState();
   renderGrid();
   renderCollection();
+  initStars();
+  initDayNightToggle();
 }
 
 init();

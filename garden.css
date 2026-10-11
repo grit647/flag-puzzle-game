@@ -17,10 +17,25 @@
 .collection-chip .emoji { font-size: 20px; }
 
 .garden-scene {
+  position: relative;
   border-radius: 18px;
   overflow: hidden;
   box-shadow: 0 2px 10px rgba(0,0,0,0.1);
   margin-bottom: 14px;
+}
+
+.daynight-btn {
+  position: absolute;
+  top: 8px; left: 8px;
+  z-index: 5;
+  padding: 6px 12px;
+  border-radius: 20px;
+  border: none;
+  background: rgba(255,255,255,0.85);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
 }
 
 .sky {
@@ -28,14 +43,51 @@
   height: 90px;
   background: linear-gradient(180deg, #7ec8f2, #bfe7fb);
   overflow: hidden;
+  transition: background 0.6s ease;
 }
+.garden-scene.night .sky {
+  background: linear-gradient(180deg, #0f172a, #1e293b);
+}
+
 .sun {
   position: absolute;
   top: 10px; right: 18px;
   font-size: 40px;
   animation: sun-spin 10s linear infinite;
+  transition: opacity 0.6s ease;
 }
 @keyframes sun-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+.moon {
+  position: absolute;
+  top: 10px; right: 18px;
+  font-size: 36px;
+  opacity: 0;
+  transition: opacity 0.6s ease;
+}
+.garden-scene.night .sun { opacity: 0; }
+.garden-scene.night .moon { opacity: 1; }
+
+.stars {
+  position: absolute; inset: 0;
+  opacity: 0;
+  transition: opacity 0.6s ease;
+}
+.garden-scene.night .stars { opacity: 1; }
+.stars span {
+  position: absolute;
+  color: #fff;
+  font-size: 10px;
+  animation: twinkle 2.4s ease-in-out infinite;
+}
+@keyframes twinkle { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; } }
+
+.garden-scene.night .cloud,
+.garden-scene.night .butterfly,
+.garden-scene.night .bee {
+  opacity: 0.25;
+}
+.garden-scene.night .ground { filter: brightness(0.6); }
 
 .cloud { position: absolute; top: 14px; font-size: 30px; opacity: 0.9; animation: drift 22s linear infinite; }
 .cloud1 { left: -60px; animation-delay: 0s; }
