@@ -1,0 +1,138 @@
+.gender-btn {
+  flex: 1;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 2px solid #cbd5e1;
+  background: #fff;
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 700;
+  color: #475569;
+}
+.gender-btn.active { border-color: #db2777; color: #db2777; background: #fdf2f8; }
+
+.doll-stage {
+  display: flex;
+  justify-content: center;
+  padding: 24px 0 10px;
+  background: linear-gradient(180deg, #eef3fb, #dde8f5);
+  border-radius: 12px;
+}
+
+.doll {
+  position: relative;
+  width: 140px;
+  height: 250px;
+}
+
+.doll-head {
+  position: absolute;
+  top: 0; left: 50%;
+  transform: translateX(-50%);
+  width: 56px; height: 56px;
+  border-radius: 50%;
+  background: #f8cba0;
+  border: 2px solid #d9a066;
+  z-index: 3;
+}
+
+.doll-hair {
+  position: absolute;
+  top: -6px; left: 50%;
+  transform: translateX(-50%);
+  width: 62px; height: 32px;
+  background: #3b2412;
+  border-radius: 50% 50% 0 0 / 70% 70% 0 0;
+  z-index: 4;
+}
+.doll.female .doll-hair {
+  width: 80px; height: 108px;
+  top: -8px;
+  border-radius: 50% 50% 45% 45% / 55% 55% 35% 35%;
+}
+
+.doll-shirt {
+  position: absolute;
+  top: 50px; left: 50%;
+  transform: translateX(-50%);
+  width: 92px; height: 76px;
+  border-radius: 16px 16px 6px 6px;
+  z-index: 2;
+  transition: background 0.2s ease, opacity 0.2s ease;
+}
+
+.doll-bottom {
+  position: absolute;
+  top: 122px; left: 50%;
+  transform: translateX(-50%);
+  width: 92px; height: 72px;
+  z-index: 2;
+  transition: background 0.2s ease, top 0.2s ease, height 0.2s ease;
+}
+.doll-bottom.pants { border-radius: 4px; position: relative; }
+.doll-bottom.pants::after {
+  content: '';
+  position: absolute;
+  left: 50%; top: 0; bottom: 0;
+  width: 3px;
+  background: rgba(0,0,0,0.15);
+}
+.doll-bottom.skirt {
+  clip-path: polygon(22% 0, 78% 0, 100% 100%, 0% 100%);
+}
+.doll-bottom.dress {
+  top: 50px;
+  height: 144px;
+  border-radius: 16px 16px 0 0;
+  clip-path: polygon(27% 0, 73% 0, 100% 100%, 0% 100%);
+}
+
+.doll-legs {
+  position: absolute;
+  top: 192px; left: 50%;
+  transform: translateX(-50%);
+  width: 72px; height: 46px;
+  background: linear-gradient(180deg, #f8cba0 0%, #f8cba0 68%, #3b2412 68%, #3b2412 100%);
+  border-radius: 0 0 8px 8px;
+  z-index: 1;
+}
+.doll-legs::before {
+  content: '';
+  position: absolute;
+  left: 50%; top: 0; bottom: 12px; width: 4px;
+  background: rgba(0,0,0,0.12);
+}
+
+.outfit-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+@media (min-width: 420px) {
+  .outfit-grid { grid-template-columns: repeat(3, 1fr); }
+}
+
+.outfit-card {
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 10px;
+  background: #fff;
+  cursor: pointer;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 700;
+  color: #475569;
+}
+.outfit-card.selected { border-color: #db2777; background: #fdf2f8; }
+.outfit-swatch {
+  width: 50px;
+  height: 50px;
+  margin: 0 auto 6px;
+  border-radius: 8px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid rgba(0,0,0,0.1);
+}
+.outfit-swatch .top-half { flex: 1; }
+.outfit-swatch .bottom-half { flex: 1; }
