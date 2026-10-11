@@ -36,7 +36,7 @@ function initCountrySelect() {
     sel.appendChild(opt);
   });
   sel.value = state.countryCode;
-  sel.addEventListener('change', () => { state.countryCode = sel.value; });
+  sel.addEventListener('change', () => { state.countryCode = sel.value; updateCurrentBestLabel(); });
 }
 
 function initDifficultyButtons() {
@@ -45,9 +45,23 @@ function initDifficultyButtons() {
       document.querySelectorAll('.diff-btn').forEach((b) => b.classList.remove('active'));
       btn.classList.add('active');
       state.diffKey = btn.dataset.diff;
+      updateCurrentBestLabel();
     });
   });
   document.querySelector('.diff-btn[data-diff="easy"]').classList.add('active');
+}
+
+// โชว์สถิติปัจจุบันของธง+ระดับที่เลือกไว้ ก่อนเริ่มเกม ให้มีเป้าหมายไปตีสถิติ
+function updateCurrentBestLabel() {
+  const label = el('currentBestLabel');
+  if (!label) return;
+  const stats = loadStats();
+  const entry = stats[`${state.countryCode}_${state.diffKey}`];
+  if (entry) {
+    label.textContent = `🏆 สถิติปัจจุบัน ธง${countryName(state.countryCode)} (${DIFFICULTIES[state.diffKey].label}): ${formatTime(entry.bestTimeSec)} — ลองเอาชนะดูไหม?`;
+  } else {
+    label.textContent = `ธง${countryName(state.countryCode)} ระดับนี้ยังไม่มีใครทำสถิติไว้ เป็นคนแรกเลยไหม?`;
+  }
 }
 
 function loadImage(url) {
@@ -444,8 +458,30 @@ function loadStats() {
 function showWinModal(timeSec, isNewBest) {
   el('winCountryLabel').textContent = `ธงชาติ${countryName(state.countryCode)} — ${DIFFICULTIES[state.diffKey].label}`;
   el('winTimeLabel').textContent = formatTime(timeSec);
-  el('winBestLabel').textContent = isNewBest ? '🌟 สถิติใหม่ส่วนตัว!' : '';
+  el('winBestLabel').textContent = isNewBest ? '🌟 ทำลายสถิติเดิม! สถิติใหม่ส่วนตัว!' : '';
   el('winModal').style.display = 'flex';
+  if (isNewBest) fireConfetti();
+}
+
+// เอฟเฟกต์พลุฉลองตอนทำลายสถิติเดิมได้ — ยิงอิโมจิกระจายออกจากกึ่งกลางจอแล้วจางหายไป
+function fireConfetti() {
+  const container = document.createElement('div');
+  container.className = 'confetti-container';
+  document.body.appendChild(container);
+  const emojis = ['🎉', '✨', '🎊', '⭐', '🥳'];
+  for (let i = 0; i < 40; i++) {
+    const p = document.createElement('span');
+    p.className = 'confetti-piece';
+    p.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+    const angle = Math.random() * Math.PI * 2;
+    const dist = 120 + Math.random() * 220;
+    p.style.setProperty('--dx', `${Math.cos(angle) * dist}px`);
+    p.style.setProperty('--dy', `${Math.sin(angle) * dist - 60}px`);
+    p.style.fontSize = `${16 + Math.random() * 16}px`;
+    p.style.animationDelay = `${Math.random() * 0.2}s`;
+    container.appendChild(p);
+  }
+  setTimeout(() => container.remove(), 2000);
 }
 
 function renderStats() {
@@ -473,6 +509,7 @@ function init() {
     const c = COUNTRIES[Math.floor(Math.random() * COUNTRIES.length)];
     state.countryCode = c.code;
     el('countrySelect').value = c.code;
+    updateCurrentBestLabel();
   });
   el('statsBtn').addEventListener('click', () => {
     const showing = el('statsPanel').style.display !== 'none';
@@ -483,6 +520,7 @@ function init() {
   el('winCloseBtn').addEventListener('click', () => {
     el('winModal').style.display = 'none';
   });
+  updateCurrentBestLabel();
   el('previewBtn').addEventListener('click', openPreview);
   el('previewCloseBtn').addEventListener('click', () => {
     el('previewModal').style.display = 'none';
