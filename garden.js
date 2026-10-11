@@ -310,6 +310,38 @@ function initDayNightToggle() {
   }
 }
 
+// เฟสพระจันทร์ — เรียงจากจันทร์ดับ ไปเต็มดวง แล้ววนกลับ (เสี้ยว/ครึ่ง/เกือบเต็ม/เต็มดวง)
+const MOON_PHASES = [
+  { emoji: '🌑', name: 'จันทร์ดับ' },
+  { emoji: '🌒', name: 'เสี้ยวขึ้น' },
+  { emoji: '🌓', name: 'ครึ่งดวง (ข้างขึ้น)' },
+  { emoji: '🌔', name: 'ค่อนดวง (ข้างขึ้น)' },
+  { emoji: '🌕', name: 'เต็มดวง!' },
+  { emoji: '🌖', name: 'ค่อนดวง (ข้างแรม)' },
+  { emoji: '🌗', name: 'ครึ่งดวง (ข้างแรม)' },
+  { emoji: '🌘', name: 'เสี้ยวแรม' },
+];
+
+function initMoonPhase() {
+  const moonEl = el('moonEl');
+  if (!moonEl) return;
+  let phaseIndex = parseInt(localStorage.getItem('gardenMoonPhase'), 10);
+  if (Number.isNaN(phaseIndex) || phaseIndex < 0 || phaseIndex >= MOON_PHASES.length) phaseIndex = 4; // เริ่มที่เต็มดวง
+
+  function render() {
+    moonEl.textContent = MOON_PHASES[phaseIndex].emoji;
+    moonEl.title = `แตะเพื่อเปลี่ยนเฟสพระจันทร์ — ตอนนี้: ${MOON_PHASES[phaseIndex].name}`;
+  }
+  render();
+
+  moonEl.addEventListener('click', (e) => {
+    e.stopPropagation(); // กันไปโดนปุ่มกลางวัน/กลางคืนที่อยู่ใกล้ๆ
+    phaseIndex = (phaseIndex + 1) % MOON_PHASES.length;
+    localStorage.setItem('gardenMoonPhase', String(phaseIndex));
+    render();
+  });
+}
+
 // โชว์ "สวนของฉัน" แบบภาพรวม — เอาทุกอย่างที่เก็บได้มาวางรวมกันเป็นภาพสวนจริง
 function openReviewGarden() {
   const content = el('reviewGarden');
@@ -343,6 +375,7 @@ function init() {
   renderCollection();
   initStars();
   initDayNightToggle();
+  initMoonPhase();
   initReviewButton();
   initSeedBox();
 }

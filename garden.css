@@ -75,10 +75,14 @@
   top: 10px; right: 18px;
   font-size: 36px;
   opacity: 0;
-  transition: opacity 0.6s ease;
+  transition: opacity 0.6s ease, transform 0.15s ease;
+  cursor: pointer;
+  padding: 6px;
 }
+.moon:active { transform: scale(0.9); }
 .garden-scene.night .sun { opacity: 0; }
 .garden-scene.night .moon { opacity: 1; }
+.garden-scene:not(.night) .moon { pointer-events: none; }
 
 .stars {
   position: absolute; inset: 0;
