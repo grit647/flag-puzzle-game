@@ -5,6 +5,7 @@ const DIFFICULTIES = {
   hard:   { cols: 6, rows: 5, label: 'ยาก (30 ชิ้น)' },
 };
 const STATS_KEY = 'flagPuzzleStats_v1';
+const SVGNS = 'http://www.w3.org/2000/svg';
 
 let state = {
   countryCode: COUNTRIES[0].code,
@@ -14,12 +15,14 @@ let state = {
   edgeData: null,   // ทิศปุ่ม/ร่องของแต่ละเส้นขอบ สุ่มใหม่ทุกครั้งที่เริ่มเกม
   boardCells: [],   // length = total; null or pieceIndex
   trayPieces: [],   // array of pieceIndex still in tray
-  selected: null,   // pieceIndex currently selected in tray
   startTime: null,
   timerInterval: null,
   elapsedSec: 0,
   playing: false,
 };
+
+let drag = null; // { pieceIndex, fromCellIndex, flagUrl, ghost, offsetX, offsetY }
+let clipIdCounter = 0;
 
 const el = (id) => document.getElementById(id);
 
@@ -92,12 +95,11 @@ async function startGame() {
   state.boardH = boardH;
   state.pieceW = boardW / state.cols;
   state.pieceH = boardH / state.rows;
-  state.amp = Math.round(Math.min(state.pieceW, state.pieceH) * 0.18);
+  state.amp = Math.round(Math.min(state.pieceW, state.pieceH) * 0.22);
   state.edgeData = generateEdgeData(state.rows, state.cols);
 
   state.boardCells = new Array(state.total).fill(null);
   state.trayPieces = shuffle([...Array(state.total).keys()]);
-  state.selected = null;
   state.elapsedSec = 0;
   state.playing = true;
   state.startTime = Date.now();
@@ -139,18 +141,63 @@ function piecePathFor(pieceIndex) {
   return buildPiecePath(state.pieceW, state.pieceH, edges, state.amp);
 }
 
-// ชิ้นจริง (มีปุ่ม/ร่องยื่นออก) ต้องมีกล่องใหญ่กว่าขนาดช่องปกติ amp รอบด้าน
-// ภาพพื้นหลังเลยต้องขยับตามให้พิกเซลตรงกับตำแหน่งจริงในภาพธงเต็ม
-function bgStyleForPiece(flagUrl, pieceIndex) {
+// สร้างชิ้นจิ๊กซอเป็น SVG จริง (ไม่ใช่ CSS clip-path) — ตัดภาพตามรูปทรงปุ่ม/ร่อง
+// แล้ววาดเส้นขอบ (ขาว+เข้ม) ทับอีกชั้น ให้เห็นรอยต่อชัดเจนแม้สีในภาพจะเหมือนกันทั้งแถบ
+function buildPieceSvg(flagUrl, pieceIndex) {
+  const amp = state.amp;
   const row = Math.floor(pieceIndex / state.cols);
   const col = pieceIndex % state.cols;
-  const amp = state.amp;
-  const x = -(col * state.pieceW) + amp;
-  const y = -(row * state.pieceH) + amp;
   const totalW = state.pieceW + amp * 2;
   const totalH = state.pieceH + amp * 2;
+  const bx = -(col * state.pieceW) + amp;
+  const by = -(row * state.pieceH) + amp;
   const path = piecePathFor(pieceIndex);
-  return `background-image:url('${flagUrl}'); background-size:${state.boardW}px ${state.boardH}px; background-position:${x}px ${y}px; width:${totalW}px; height:${totalH}px; clip-path:path('${path}'); -webkit-clip-path:path('${path}');`;
+  const clipId = `pclip-${clipIdCounter++}`;
+
+  const svg = document.createElementNS(SVGNS, 'svg');
+  svg.setAttribute('class', 'piece-svg');
+  svg.setAttribute('width', totalW);
+  svg.setAttribute('height', totalH);
+  svg.setAttribute('viewBox', `0 0 ${totalW} ${totalH}`);
+  svg.dataset.pieceIndex = String(pieceIndex);
+
+  const defs = document.createElementNS(SVGNS, 'defs');
+  const clipPath = document.createElementNS(SVGNS, 'clipPath');
+  clipPath.setAttribute('id', clipId);
+  const clipShape = document.createElementNS(SVGNS, 'path');
+  clipShape.setAttribute('d', path);
+  clipPath.appendChild(clipShape);
+  defs.appendChild(clipPath);
+  svg.appendChild(defs);
+
+  const image = document.createElementNS(SVGNS, 'image');
+  image.setAttributeNS('http://www.w3.org/1999/xlink', 'href', flagUrl);
+  image.setAttribute('href', flagUrl);
+  image.setAttribute('x', bx);
+  image.setAttribute('y', by);
+  image.setAttribute('width', state.boardW);
+  image.setAttribute('height', state.boardH);
+  image.setAttribute('preserveAspectRatio', 'none');
+  image.setAttribute('clip-path', `url(#${clipId})`);
+  svg.appendChild(image);
+
+  const outlineWhite = document.createElementNS(SVGNS, 'path');
+  outlineWhite.setAttribute('d', path);
+  outlineWhite.setAttribute('fill', 'none');
+  outlineWhite.setAttribute('stroke', '#ffffff');
+  outlineWhite.setAttribute('stroke-width', '3');
+  outlineWhite.setAttribute('stroke-linejoin', 'round');
+  svg.appendChild(outlineWhite);
+
+  const outlineDark = document.createElementNS(SVGNS, 'path');
+  outlineDark.setAttribute('d', path);
+  outlineDark.setAttribute('fill', 'none');
+  outlineDark.setAttribute('stroke', '#1e293b');
+  outlineDark.setAttribute('stroke-width', '1.2');
+  outlineDark.setAttribute('stroke-linejoin', 'round');
+  svg.appendChild(outlineDark);
+
+  return svg;
 }
 
 function renderBoard(flagUrl) {
@@ -169,14 +216,13 @@ function renderBoard(flagUrl) {
     const pieceIndex = state.boardCells[i];
     if (pieceIndex !== null) {
       cell.classList.add('filled');
-      const inner = document.createElement('div');
-      inner.className = 'piece-shape';
-      inner.setAttribute('style', bgStyleForPiece(flagUrl, pieceIndex));
-      cell.appendChild(inner);
+      const svg = buildPieceSvg(flagUrl, pieceIndex);
+      svg.classList.add('piece-on-board');
+      svg.addEventListener('pointerdown', (e) => onPiecePointerDown(e, pieceIndex, i, flagUrl));
+      cell.appendChild(svg);
     } else {
       cell.classList.add('empty');
     }
-    cell.addEventListener('click', () => onCellClick(i, flagUrl));
     board.appendChild(cell);
   }
 }
@@ -185,40 +231,90 @@ function renderTray(flagUrl) {
   const tray = el('tray');
   tray.innerHTML = '';
   state.trayPieces.forEach((pieceIndex) => {
-    const p = document.createElement('div');
-    p.className = 'piece';
-    if (state.selected === pieceIndex) p.classList.add('selected');
-    p.setAttribute('style', bgStyleForPiece(flagUrl, pieceIndex));
-    p.addEventListener('click', () => onTrayPieceClick(pieceIndex, flagUrl));
-    tray.appendChild(p);
+    const svg = buildPieceSvg(flagUrl, pieceIndex);
+    svg.addEventListener('pointerdown', (e) => onPiecePointerDown(e, pieceIndex, null, flagUrl));
+    tray.appendChild(svg);
   });
 }
 
-function onTrayPieceClick(pieceIndex, flagUrl) {
-  state.selected = state.selected === pieceIndex ? null : pieceIndex;
-  renderTray(flagUrl);
+// ----- ลากวางด้วย Pointer Events (ใช้ได้ทั้งเมาส์และนิ้วบนมือถือ) -----
+
+function onPiecePointerDown(e, pieceIndex, fromCellIndex, flagUrl) {
+  if (drag) return;
+  e.preventDefault();
+  const rect = e.currentTarget.getBoundingClientRect();
+  const ghost = buildPieceSvg(flagUrl, pieceIndex);
+  ghost.classList.add('drag-ghost');
+  ghost.style.left = `${rect.left}px`;
+  ghost.style.top = `${rect.top}px`;
+  ghost.style.width = `${rect.width}px`;
+  ghost.style.height = `${rect.height}px`;
+  document.body.appendChild(ghost);
+
+  drag = {
+    pieceIndex, fromCellIndex, flagUrl, ghost,
+    offsetX: e.clientX - rect.left,
+    offsetY: e.clientY - rect.top,
+  };
+
+  window.addEventListener('pointermove', onDragMove);
+  window.addEventListener('pointerup', onDragEnd);
 }
 
-function onCellClick(cellIndex, flagUrl) {
-  const occupied = state.boardCells[cellIndex] !== null;
-  if (occupied) {
-    // เอาชิ้นที่วางไว้กลับไปที่ถาด
-    const pieceIndex = state.boardCells[cellIndex];
-    state.boardCells[cellIndex] = null;
+function onDragMove(e) {
+  if (!drag) return;
+  drag.ghost.style.left = `${e.clientX - drag.offsetX}px`;
+  drag.ghost.style.top = `${e.clientY - drag.offsetY}px`;
+}
+
+function onDragEnd(e) {
+  if (!drag) return;
+  window.removeEventListener('pointermove', onDragMove);
+  window.removeEventListener('pointerup', onDragEnd);
+
+  const d = drag;
+  drag = null;
+  d.ghost.style.display = 'none'; // ซ่อนก่อนหาจุดวาง จะได้ไม่บังตัวเอง
+  const dropEl = document.elementFromPoint(e.clientX, e.clientY);
+  d.ghost.remove();
+
+  const cellEl = dropEl ? dropEl.closest('.cell') : null;
+  const trayEl = dropEl ? dropEl.closest('#tray') : null;
+  applyDrop(d.pieceIndex, d.fromCellIndex, cellEl, trayEl, d.flagUrl);
+}
+
+function applyDrop(pieceIndex, fromCellIndex, cellEl, trayEl, flagUrl) {
+  let changed = false;
+  if (cellEl) {
+    const targetIndex = Number(cellEl.dataset.index);
+    if (targetIndex !== fromCellIndex) {
+      const occupant = state.boardCells[targetIndex];
+      if (occupant === null) {
+        state.boardCells[targetIndex] = pieceIndex;
+        if (fromCellIndex !== null) {
+          state.boardCells[fromCellIndex] = null;
+        } else {
+          state.trayPieces = state.trayPieces.filter((p) => p !== pieceIndex);
+        }
+        changed = true;
+      } else if (fromCellIndex !== null) {
+        // สลับตำแหน่งชิ้น 2 ชิ้นบนกระดาน
+        state.boardCells[targetIndex] = pieceIndex;
+        state.boardCells[fromCellIndex] = occupant;
+        changed = true;
+      }
+      // ลากจากถาดไปวางทับช่องที่มีชิ้นอยู่แล้ว: ไม่ทำอะไร เด้งกลับถาด
+    }
+  } else if (trayEl && fromCellIndex !== null) {
+    state.boardCells[fromCellIndex] = null;
     state.trayPieces.push(pieceIndex);
-    renderBoard(flagUrl);
-    renderTray(flagUrl);
-    updatePieceCount();
-    return;
+    changed = true;
   }
-  if (state.selected === null) return;
-  state.boardCells[cellIndex] = state.selected;
-  state.trayPieces = state.trayPieces.filter((p) => p !== state.selected);
-  state.selected = null;
+
   renderBoard(flagUrl);
   renderTray(flagUrl);
   updatePieceCount();
-  checkWin(flagUrl);
+  if (changed) checkWin(flagUrl);
 }
 
 function checkWin(flagUrl) {

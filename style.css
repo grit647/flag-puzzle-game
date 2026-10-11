@@ -81,7 +81,6 @@ select {
 }
 .cell {
   background-color: transparent;
-  cursor: pointer;
   position: relative;
   overflow: visible;
 }
@@ -90,14 +89,6 @@ select {
   content: '';
   position: absolute; inset: 0;
   background: repeating-linear-gradient(45deg, #e2e8f0, #e2e8f0 4px, #f1f5f9 4px, #f1f5f9 8px);
-}
-.piece-shape {
-  position: absolute;
-  top: 50%; left: 50%;
-  transform: translate(-50%, -50%);
-  background-repeat: no-repeat;
-  filter: drop-shadow(0 0 1.5px rgba(15,23,42,0.55));
-  pointer-events: none;
 }
 
 #tray {
@@ -110,13 +101,23 @@ select {
   border-radius: 10px;
   min-height: 60px;
 }
-.piece {
-  background-repeat: no-repeat;
-  cursor: pointer;
-  filter: drop-shadow(0 0 1.5px rgba(15,23,42,0.55));
+
+.piece-svg {
+  touch-action: none;
+  cursor: grab;
+  display: block;
 }
-.piece.selected {
-  filter: drop-shadow(0 0 1.5px rgba(15,23,42,0.55)) drop-shadow(0 0 5px #f59e0b) drop-shadow(0 0 5px #f59e0b);
+.piece-svg.piece-on-board {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+}
+.piece-svg.drag-ghost {
+  position: fixed;
+  z-index: 999;
+  pointer-events: none;
+  transform: scale(1.08);
+  filter: drop-shadow(0 6px 12px rgba(0,0,0,0.35));
 }
 
 .hint { text-align: center; font-size: 12px; color: #94a3b8; margin-bottom: 10px; }
