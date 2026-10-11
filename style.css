@@ -141,6 +141,9 @@ select {
   touch-action: pan-x;
   cursor: grab;
   display: block;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
 }
 @media (min-width: 560px) {
   .piece-svg { touch-action: pan-y; }

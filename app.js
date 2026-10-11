@@ -231,6 +231,7 @@ function buildPieceSvg(flagUrl, pieceIndex) {
   image.setAttribute('height', state.boardH);
   image.setAttribute('preserveAspectRatio', 'none');
   image.setAttribute('clip-path', `url(#${clipId})`);
+  image.setAttribute('draggable', 'false');
   svg.appendChild(image);
 
   const outlineWhite = document.createElementNS(SVGNS, 'path');
@@ -249,6 +250,7 @@ function buildPieceSvg(flagUrl, pieceIndex) {
   outlineDark.setAttribute('stroke-linejoin', 'round');
   svg.appendChild(outlineDark);
 
+  svg.addEventListener('contextmenu', (e) => e.preventDefault());
   return svg;
 }
 
@@ -296,7 +298,9 @@ let pendingDrag = null;
 
 function onPiecePointerDown(e, pieceIndex, fromCellIndex, flagUrl) {
   if (drag || pendingDrag) return;
-  if (fromCellIndex === null) {
+  e.preventDefault(); // กันเมนูของเบราว์เซอร์ (คัดลอก/ดาวน์โหลดรูป) โผล่ตอนกดค้างบนมือถือ
+  // หน่วงเวลาเล็กน้อยเฉพาะ "นิ้วสัมผัส" (ให้แยกจากการปัดเลื่อนถาด) — เมาส์/ปากกาเริ่มลากได้ทันที ไม่ต้องหน่วง
+  if (fromCellIndex === null && e.pointerType === 'touch') {
     armTrayDrag(e, pieceIndex, flagUrl);
   } else {
     beginDrag(e, pieceIndex, fromCellIndex, flagUrl, e.currentTarget);
