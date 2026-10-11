@@ -12,6 +12,15 @@ const FLOWER_KINDS = [
   { key: 'daisy', emoji: '🌼', name: 'เดซี่' },
 ];
 
+const TREE_KINDS = [
+  { key: 'bigtree', emoji: '🌳', name: 'ต้นไม้ใหญ่' },
+  { key: 'pine', emoji: '🌲', name: 'ต้นสน' },
+  { key: 'palm', emoji: '🌴', name: 'ต้นมะพร้าว' },
+  { key: 'cactus', emoji: '🌵', name: 'กระบองเพชร' },
+];
+
+const ALL_KINDS = [...FLOWER_KINDS, ...TREE_KINDS];
+
 // แต่ละช่อง: null = ว่าง, หรือ { stage: 1|2|3, kind }
 // stage 1 = 🌱 เมล็ดงอก (ปลูกแล้ว), stage 2 = 🌿 ต้นกล้า (รดน้ำ 1 ครั้ง), stage 3 = บาน (รดน้ำครบ)
 let plots = new Array(PLOT_COUNT).fill(null);
@@ -35,7 +44,7 @@ function saveState() {
 }
 
 function randomKind() {
-  return FLOWER_KINDS[Math.floor(Math.random() * FLOWER_KINDS.length)];
+  return ALL_KINDS[Math.floor(Math.random() * ALL_KINDS.length)];
 }
 
 function renderGrid() {
@@ -53,8 +62,8 @@ function renderGrid() {
       cell.innerHTML = '<div class="plot-emoji">🌿</div><div class="plot-hint">แตะรดน้ำอีกครั้ง</div>';
     } else {
       cell.classList.add('bloom');
-      const kind = FLOWER_KINDS.find((k) => k.key === plot.kind);
-      cell.innerHTML = `<div class="plot-emoji">${kind.emoji}</div><div class="plot-hint">แตะเพื่อเก็บดอกไม้!</div>`;
+      const kind = ALL_KINDS.find((k) => k.key === plot.kind);
+      cell.innerHTML = `<div class="plot-emoji">${kind.emoji}</div><div class="plot-hint">แตะเพื่อเก็บ!</div>`;
     }
     cell.addEventListener('click', (e) => onPlotClick(i, e));
     grid.appendChild(cell);
@@ -71,38 +80,45 @@ function onPlotClick(i, e) {
   } else if (plot.stage === 2) {
     plot.stage = 3; // บานแล้ว!
   } else {
-    // เก็บดอกไม้
+    // เก็บผลผลิต (ดอกไม้หรือต้นไม้)
+    const harvestedKind = ALL_KINDS.find((k) => k.key === plot.kind);
     collection[plot.kind] = (collection[plot.kind] || 0) + 1;
     totalHarvested += 1;
     plots[i] = null;
     saveState();
-    showFloatPlus(e.clientX, e.clientY);
+    showFloatPlus(e.clientX, e.clientY, harvestedKind.emoji);
     renderCollection();
   }
   renderGrid();
 }
 
-function showFloatPlus(x, y) {
+function showFloatPlus(x, y, emoji) {
   const span = document.createElement('span');
   span.className = 'float-plus';
-  span.textContent = '+1 🌼';
+  span.textContent = `+1 ${emoji}`;
   span.style.left = `${x}px`;
   span.style.top = `${y}px`;
   document.body.appendChild(span);
   setTimeout(() => span.remove(), 900);
 }
 
-function renderCollection() {
-  el('totalCount').textContent = String(totalHarvested);
-  const row = el('collectionRow');
+function renderCollectionGroup(rowId, kinds) {
+  const row = el(rowId);
+  if (!row) return;
   row.innerHTML = '';
-  FLOWER_KINDS.forEach((kind) => {
+  kinds.forEach((kind) => {
     const count = collection[kind.key] || 0;
     const chip = document.createElement('div');
     chip.className = 'collection-chip';
     chip.innerHTML = `<span class="emoji">${kind.emoji}</span><span>${kind.name} × ${count}</span>`;
     row.appendChild(chip);
   });
+}
+
+function renderCollection() {
+  el('totalCount').textContent = String(totalHarvested);
+  renderCollectionGroup('collectionRow', FLOWER_KINDS);
+  renderCollectionGroup('treeCollectionRow', TREE_KINDS);
 }
 
 // สร้างดาวสุ่มตำแหน่งไว้ในท้องฟ้า (โชว์เฉพาะตอนกลางคืน)
