@@ -38,10 +38,26 @@ let plots = new Array(PLOT_COUNT).fill(null);
 let collection = {}; // { roseKey: count, ... }
 let totalHarvested = 0;
 let points = 0; // แต้มสะสม ได้จากการเก็บผลผลิต ใช้ซื้อกล่องสุ่มเมล็ดได้
+let goldHarvested = 0;
+let rainbowHarvested = 0;
 const SEED_BOX_COST = 50;
 const SEED_BOX_AMOUNT = 7;
 const SELL_VALUE_NORMAL = 5;  // ขายดอกไม้/ต้นไม้ธรรมดา ได้ 5 แต้มต่อชิ้น
 const SELL_VALUE_FANTASY = 20; // ของแฟนตาซีหายาก ขายได้แพงกว่า
+
+// "ของทอง"/"สายรุ้ง" เป็นสุ่มพิเศษที่ติดมากับดอกไม้/ต้นไม้ชนิดไหนก็ได้ (คนละระบบกับของแฟนตาซี)
+// เกิดได้ตั้งแต่ตอนปลูกเมล็ด เห็นได้เลยไม่ต้องรอบาน — ยิ่งหายากยิ่งได้แต้มโบนัสเยอะ
+const VARIANT_GOLD_CHANCE = 0.06;    // 6%
+const VARIANT_RAINBOW_CHANCE = 0.02; // 2%
+const VARIANT_GOLD_BONUS = 10;
+const VARIANT_RAINBOW_BONUS = 25;
+
+function rollVariant() {
+  const r = Math.random();
+  if (r < VARIANT_RAINBOW_CHANCE) return 'rainbow';
+  if (r < VARIANT_RAINBOW_CHANCE + VARIANT_GOLD_CHANCE) return 'gold';
+  return 'normal';
+}
 
 const el = (id) => document.getElementById(id);
 
@@ -52,12 +68,16 @@ function loadState() {
       collection = saved.collection || {};
       totalHarvested = saved.totalHarvested || 0;
       points = saved.points || 0;
+      goldHarvested = saved.goldHarvested || 0;
+      rainbowHarvested = saved.rainbowHarvested || 0;
     }
   } catch (e) { /* เริ่มใหม่ถ้าอ่านไม่ได้ */ }
 }
 
 function saveState() {
-  localStorage.setItem(GARDEN_STATE_KEY, JSON.stringify({ collection, totalHarvested, points }));
+  localStorage.setItem(GARDEN_STATE_KEY, JSON.stringify({
+    collection, totalHarvested, points, goldHarvested, rainbowHarvested,
+  }));
 }
 
 function randomKind() {
@@ -65,6 +85,12 @@ function randomKind() {
     return FANTASY_KINDS[Math.floor(Math.random() * FANTASY_KINDS.length)];
   }
   return NORMAL_KINDS[Math.floor(Math.random() * NORMAL_KINDS.length)];
+}
+
+function variantBadge(variant) {
+  if (variant === 'rainbow') return '<div class="plot-badge badge-rainbow">🌈</div>';
+  if (variant === 'gold') return '<div class="plot-badge badge-gold">🏆</div>';
+  return '';
 }
 
 function renderGrid() {
@@ -76,16 +102,22 @@ function renderGrid() {
     if (!plot) {
       cell.classList.add('empty');
       cell.innerHTML = '<div class="plot-emoji">🟫</div><div class="plot-hint">แตะเพื่อปลูกเมล็ด</div>';
-    } else if (plot.stage === 1) {
-      cell.innerHTML = '<div class="plot-emoji">🌱</div><div class="plot-hint">แตะเพื่อรดน้ำ</div>';
-    } else if (plot.stage === 2) {
-      cell.innerHTML = '<div class="plot-emoji">🌿</div><div class="plot-hint">แตะรดน้ำอีกครั้ง</div>';
     } else {
-      cell.classList.add('bloom');
-      const kind = ALL_KINDS.find((k) => k.key === plot.kind);
-      if (kind.fantasy) cell.classList.add('fantasy');
-      const hintText = kind.fantasy ? '✨ ของหายาก! แตะเก็บเลย!' : 'แตะเพื่อเก็บ!';
-      cell.innerHTML = `<div class="plot-emoji">${kind.emoji}</div><div class="plot-hint">${hintText}</div>`;
+      // เห็นได้ตั้งแต่เมล็ดเลยว่าเป็น "ของทอง"/"สายรุ้ง" หรือเปล่า — ลุ้นได้ทันทีไม่ต้องรอบาน
+      if (plot.variant === 'gold') cell.classList.add('variant-gold');
+      if (plot.variant === 'rainbow') cell.classList.add('variant-rainbow');
+      const badge = variantBadge(plot.variant);
+      if (plot.stage === 1) {
+        cell.innerHTML = `${badge}<div class="plot-emoji">🌱</div><div class="plot-hint">แตะเพื่อรดน้ำ</div>`;
+      } else if (plot.stage === 2) {
+        cell.innerHTML = `${badge}<div class="plot-emoji">🌿</div><div class="plot-hint">แตะรดน้ำอีกครั้ง</div>`;
+      } else {
+        cell.classList.add('bloom');
+        const kind = ALL_KINDS.find((k) => k.key === plot.kind);
+        if (kind.fantasy) cell.classList.add('fantasy');
+        const hintText = kind.fantasy ? '✨ ของหายาก! แตะเก็บเลย!' : 'แตะเพื่อเก็บ!';
+        cell.innerHTML = `${badge}<div class="plot-emoji">${kind.emoji}</div><div class="plot-hint">${hintText}</div>`;
+      }
     }
     cell.addEventListener('click', (e) => onPlotClick(i, e));
     grid.appendChild(cell);
@@ -95,24 +127,38 @@ function renderGrid() {
 function onPlotClick(i, e) {
   const plot = plots[i];
   if (!plot) {
-    // ปลูกเมล็ดใหม่ — สุ่มชนิดดอกไม้ไว้ล่วงหน้า (เผยตอนบาน)
-    plots[i] = { stage: 1, kind: randomKind().key };
+    // ปลูกเมล็ดใหม่ — สุ่มชนิดไว้ล่วงหน้า (เผยตอนบาน) + สุ่มว่าเป็นของทอง/สายรุ้งไหม (เห็นได้ทันที)
+    plots[i] = { stage: 1, kind: randomKind().key, variant: rollVariant() };
   } else if (plot.stage === 1) {
     plot.stage = 2;
   } else if (plot.stage === 2) {
     plot.stage = 3; // บานแล้ว!
   } else {
-    // เก็บผลผลิต (ดอกไม้หรือต้นไม้)
-    const harvestedKind = ALL_KINDS.find((k) => k.key === plot.kind);
-    collection[plot.kind] = (collection[plot.kind] || 0) + 1;
-    totalHarvested += 1;
-    points += 1; // เก็บได้ 1 ชิ้น = ได้ 1 แต้ม เอาไปซื้อกล่องสุ่มเมล็ดได้
-    plots[i] = null;
-    saveState();
-    showFloatPlus(e.clientX, e.clientY, harvestedKind.emoji);
-    renderCollection();
+    harvestPlot(i, plot, e.clientX, e.clientY);
   }
   renderGrid();
+}
+
+function harvestPlot(i, plot, x, y) {
+  const harvestedKind = ALL_KINDS.find((k) => k.key === plot.kind);
+  collection[plot.kind] = (collection[plot.kind] || 0) + 1;
+  totalHarvested += 1;
+  let bonus = 0;
+  let badgeText = '';
+  if (plot.variant === 'gold') {
+    goldHarvested += 1;
+    bonus = VARIANT_GOLD_BONUS;
+    badgeText = ' 🏆ทอง';
+  } else if (plot.variant === 'rainbow') {
+    rainbowHarvested += 1;
+    bonus = VARIANT_RAINBOW_BONUS;
+    badgeText = ' 🌈สายรุ้ง';
+  }
+  points += 1 + bonus; // เก็บได้ 1 ชิ้น = ได้ 1 แต้ม + โบนัสถ้าเป็นของทอง/สายรุ้ง
+  plots[i] = null;
+  saveState();
+  showFloatPlus(x, y, `${harvestedKind.emoji}${badgeText}`);
+  renderCollection();
 }
 
 function showFloatPlus(x, y, emoji) {
@@ -172,6 +218,10 @@ function updatePointsDisplay() {
   if (pointsLabel) pointsLabel.textContent = String(points);
   const btn = el('seedBoxBtn');
   if (btn) btn.disabled = points < SEED_BOX_COST;
+  const goldLabel = el('goldCount');
+  if (goldLabel) goldLabel.textContent = String(goldHarvested);
+  const rainbowLabel = el('rainbowCount');
+  if (rainbowLabel) rainbowLabel.textContent = String(rainbowHarvested);
 }
 
 // กล่องสุ่มเมล็ด — จ่าย 50 แต้ม ได้เมล็ดสุ่ม 7 เมล็ด ปลูกลงช่องว่างให้ทันที
@@ -189,8 +239,9 @@ function openSeedBox() {
   const obtained = [];
   shuffledEmpty.forEach((idx) => {
     const kind = randomKind();
-    plots[idx] = { stage: 1, kind: kind.key };
-    obtained.push(kind);
+    const variant = rollVariant();
+    plots[idx] = { stage: 1, kind: kind.key, variant };
+    obtained.push({ ...kind, variant });
   });
   saveState();
   renderGrid();
@@ -210,7 +261,8 @@ function showSeedBoxResult(obtained, noSpace) {
       : `ได้เมล็ดใหม่ ${obtained.length} ต้น ปลูกลงสวนให้แล้ว รดน้ำให้โตกันเลย!`;
     obtained.forEach((kind) => {
       const span = document.createElement('span');
-      span.textContent = kind.emoji;
+      span.textContent = kind.variant === 'gold' ? `🏆${kind.emoji}`
+        : kind.variant === 'rainbow' ? `🌈${kind.emoji}` : kind.emoji;
       if (kind.fantasy) span.classList.add('seed-box-fantasy');
       content.appendChild(span);
     });

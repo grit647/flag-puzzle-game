@@ -199,6 +199,45 @@
   0%, 100% { box-shadow: 0 0 6px 2px rgba(192,132,252,0.5); }
   50%      { box-shadow: 0 0 16px 6px rgba(192,132,252,0.8); }
 }
+/* ป้ายมุมขวาบน บอกว่าช่องนี้เป็น "ของทอง"/"สายรุ้ง" — เห็นได้ตั้งแต่ปลูกเมล็ด ไม่ต้องรอบาน */
+.plot-badge {
+  position: absolute;
+  top: -8px; right: -8px;
+  font-size: 20px;
+  z-index: 3;
+  filter: drop-shadow(0 1px 2px rgba(0,0,0,0.4));
+  animation: badge-bounce 1s ease-in-out infinite;
+}
+@keyframes badge-bounce {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-4px); }
+}
+
+/* ของทอง — ประกายเหลืองทองวิบวับ */
+.plot.variant-gold {
+  border-color: #eab308;
+  box-shadow: 0 0 10px 3px rgba(234,179,8,0.5);
+  animation: gold-pulse 1.4s ease-in-out infinite;
+}
+.plot.variant-gold .plot-hint { color: #92400e; font-weight: 800; }
+@keyframes gold-pulse {
+  0%, 100% { box-shadow: 0 0 8px 2px rgba(234,179,8,0.45); }
+  50%      { box-shadow: 0 0 18px 6px rgba(234,179,8,0.85); }
+}
+
+/* สายรุ้ง (variant) — ประกายรุ้งไล่สี แรงกว่าของแฟนตาซีอีกขั้น */
+.plot.variant-rainbow {
+  background: linear-gradient(135deg, #fca5a5, #fde68a, #86efac, #93c5fd, #d8b4fe);
+  background-size: 300% 300%;
+  border-color: #a78bfa;
+  animation: fantasy-glow 2.2s ease infinite, rainbow-pulse 1.2s ease-in-out infinite;
+}
+.plot.variant-rainbow .plot-hint { color: #6d28d9; font-weight: 800; }
+@keyframes rainbow-pulse {
+  0%, 100% { box-shadow: 0 0 10px 3px rgba(167,139,250,0.5); }
+  50%      { box-shadow: 0 0 22px 8px rgba(167,139,250,0.9); }
+}
+
 @keyframes fantasy-spin {
   0%, 100% { transform: scale(1) rotate(0deg); }
   50%      { transform: scale(1.12) rotate(6deg); }
