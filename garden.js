@@ -340,11 +340,37 @@ function initDayNightToggle() {
     scene.classList.toggle('night');
     localStorage.setItem('gardenDayNight', scene.classList.contains('night') ? 'night' : 'day');
     updateDayNightBtnLabel();
+    if (scene.classList.contains('night')) maybeSpawnMeteor(); // ลุ้นดาวตกทันทีตอนเพิ่งเปลี่ยนเป็นกลางคืน
   });
 
   function updateDayNightBtnLabel() {
     btn.textContent = scene.classList.contains('night') ? '☀️ กลางวัน' : '🌙 กลางคืน';
   }
+}
+
+// ฝนดาวตก — เฉพาะตอนกลางคืน สุ่มทุก ~4 วิ มีโอกาส 70% ที่จะมีดาวตกพุ่งผ่านท้องฟ้า
+const METEOR_CHANCE = 0.7;
+
+function spawnMeteor() {
+  const sky = el('skyEl');
+  if (!sky) return;
+  const meteor = document.createElement('div');
+  meteor.className = 'meteor';
+  meteor.textContent = '🌠';
+  meteor.style.left = `${10 + Math.random() * 70}%`;
+  meteor.style.animationDuration = `${0.7 + Math.random() * 0.5}s`;
+  sky.appendChild(meteor);
+  meteor.addEventListener('animationend', () => meteor.remove());
+}
+
+function maybeSpawnMeteor() {
+  const scene = el('gardenScene');
+  if (!scene || !scene.classList.contains('night')) return;
+  if (Math.random() < METEOR_CHANCE) spawnMeteor();
+}
+
+function initMeteorShower() {
+  setInterval(maybeSpawnMeteor, 4000);
 }
 
 // เฟสพระจันทร์ — เรียงจากจันทร์ดับ ไปเต็มดวง แล้ววนกลับ (เสี้ยว/ครึ่ง/เกือบเต็ม/เต็มดวง)
@@ -413,6 +439,7 @@ function init() {
   initStars();
   initDayNightToggle();
   initMoonPhase();
+  initMeteorShower();
   initReviewButton();
   initSeedBox();
 }

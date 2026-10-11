@@ -86,6 +86,20 @@
 .garden-scene.night .moon { opacity: 1; }
 .garden-scene:not(.night) .moon { pointer-events: none; }
 
+.meteor {
+  position: absolute;
+  top: -10px;
+  font-size: 18px;
+  animation: meteor-fall linear forwards;
+  pointer-events: none;
+  z-index: 3;
+}
+@keyframes meteor-fall {
+  0%   { transform: translate(0, 0) rotate(130deg); opacity: 1; }
+  80%  { opacity: 1; }
+  100% { transform: translate(-70px, 95px) rotate(130deg); opacity: 0; }
+}
+
 .stars {
   position: absolute; inset: 0;
   opacity: 0;
