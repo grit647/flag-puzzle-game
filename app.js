@@ -10,7 +10,8 @@ let state = {
   countryCode: COUNTRIES[0].code,
   diffKey: 'easy',
   cols: 4, rows: 2, total: 8,
-  boardW: 0, boardH: 0, pieceW: 0, pieceH: 0,
+  boardW: 0, boardH: 0, pieceW: 0, pieceH: 0, amp: 0,
+  edgeData: null,   // ทิศปุ่ม/ร่องของแต่ละเส้นขอบ สุ่มใหม่ทุกครั้งที่เริ่มเกม
   boardCells: [],   // length = total; null or pieceIndex
   trayPieces: [],   // array of pieceIndex still in tray
   selected: null,   // pieceIndex currently selected in tray
@@ -91,6 +92,8 @@ async function startGame() {
   state.boardH = boardH;
   state.pieceW = boardW / state.cols;
   state.pieceH = boardH / state.rows;
+  state.amp = Math.round(Math.min(state.pieceW, state.pieceH) * 0.18);
+  state.edgeData = generateEdgeData(state.rows, state.cols);
 
   state.boardCells = new Array(state.total).fill(null);
   state.trayPieces = shuffle([...Array(state.total).keys()]);
@@ -129,31 +132,49 @@ function updatePieceCount() {
   el('pieceCountDisplay').textContent = `${placed}/${state.total} ชิ้น`;
 }
 
+function piecePathFor(pieceIndex) {
+  const row = Math.floor(pieceIndex / state.cols);
+  const col = pieceIndex % state.cols;
+  const edges = edgesForPiece(row, col, state.rows, state.cols, state.edgeData);
+  return buildPiecePath(state.pieceW, state.pieceH, edges, state.amp);
+}
+
+// ชิ้นจริง (มีปุ่ม/ร่องยื่นออก) ต้องมีกล่องใหญ่กว่าขนาดช่องปกติ amp รอบด้าน
+// ภาพพื้นหลังเลยต้องขยับตามให้พิกเซลตรงกับตำแหน่งจริงในภาพธงเต็ม
 function bgStyleForPiece(flagUrl, pieceIndex) {
   const row = Math.floor(pieceIndex / state.cols);
   const col = pieceIndex % state.cols;
-  const x = -(col * state.pieceW);
-  const y = -(row * state.pieceH);
-  return `background-image:url('${flagUrl}'); background-size:${state.boardW}px ${state.boardH}px; background-position:${x}px ${y}px; width:${state.pieceW}px; height:${state.pieceH}px;`;
+  const amp = state.amp;
+  const x = -(col * state.pieceW) + amp;
+  const y = -(row * state.pieceH) + amp;
+  const totalW = state.pieceW + amp * 2;
+  const totalH = state.pieceH + amp * 2;
+  const path = piecePathFor(pieceIndex);
+  return `background-image:url('${flagUrl}'); background-size:${state.boardW}px ${state.boardH}px; background-position:${x}px ${y}px; width:${totalW}px; height:${totalH}px; clip-path:path('${path}'); -webkit-clip-path:path('${path}');`;
 }
 
 function renderBoard(flagUrl) {
   const board = el('board');
   board.style.gridTemplateColumns = `repeat(${state.cols}, ${state.pieceW}px)`;
+  board.style.gridTemplateRows = `repeat(${state.rows}, ${state.pieceH}px)`;
   board.style.width = `${state.boardW}px`;
+  board.style.height = `${state.boardH}px`;
   board.innerHTML = '';
   for (let i = 0; i < state.total; i++) {
     const cell = document.createElement('div');
     cell.className = 'cell';
     cell.dataset.index = String(i);
+    cell.style.width = `${state.pieceW}px`;
+    cell.style.height = `${state.pieceH}px`;
     const pieceIndex = state.boardCells[i];
     if (pieceIndex !== null) {
       cell.classList.add('filled');
-      cell.setAttribute('style', bgStyleForPiece(flagUrl, pieceIndex));
+      const inner = document.createElement('div');
+      inner.className = 'piece-shape';
+      inner.setAttribute('style', bgStyleForPiece(flagUrl, pieceIndex));
+      cell.appendChild(inner);
     } else {
       cell.classList.add('empty');
-      cell.style.width = `${state.pieceW}px`;
-      cell.style.height = `${state.pieceH}px`;
     }
     cell.addEventListener('click', () => onCellClick(i, flagUrl));
     board.appendChild(cell);

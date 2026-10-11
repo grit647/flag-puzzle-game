@@ -72,32 +72,40 @@ select {
 
 #board {
   display: grid;
-  gap: 2px;
+  gap: 0;
   background: #cbd5e1;
   margin: 0 auto 14px;
   border-radius: 8px;
-  overflow: hidden;
   border: 3px solid #94a3b8;
-}
-.cell {
-  background-color: #f1f5f9;
-  background-repeat: no-repeat;
-  cursor: pointer;
   position: relative;
 }
-.cell.filled { cursor: pointer; }
+.cell {
+  background-color: transparent;
+  cursor: pointer;
+  position: relative;
+  overflow: visible;
+}
+.cell.empty { background-color: #f1f5f9; }
 .cell.empty::after {
   content: '';
   position: absolute; inset: 0;
   background: repeating-linear-gradient(45deg, #e2e8f0, #e2e8f0 4px, #f1f5f9 4px, #f1f5f9 8px);
 }
+.piece-shape {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  background-repeat: no-repeat;
+  filter: drop-shadow(0 0 1.5px rgba(15,23,42,0.55));
+  pointer-events: none;
+}
 
 #tray {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: 10px;
   justify-content: center;
-  padding: 10px;
+  padding: 14px;
   background: #f8fafc;
   border-radius: 10px;
   min-height: 60px;
@@ -105,10 +113,11 @@ select {
 .piece {
   background-repeat: no-repeat;
   cursor: pointer;
-  border: 2px solid transparent;
-  border-radius: 3px;
+  filter: drop-shadow(0 0 1.5px rgba(15,23,42,0.55));
 }
-.piece.selected { border-color: #f59e0b; box-shadow: 0 0 0 2px #f59e0b; }
+.piece.selected {
+  filter: drop-shadow(0 0 1.5px rgba(15,23,42,0.55)) drop-shadow(0 0 5px #f59e0b) drop-shadow(0 0 5px #f59e0b);
+}
 
 .hint { text-align: center; font-size: 12px; color: #94a3b8; margin-bottom: 10px; }
 
