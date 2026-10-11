@@ -373,6 +373,26 @@ function initMeteorShower() {
   setInterval(maybeSpawnMeteor, 4000);
 }
 
+// โหมด 2D/3D — สลับมุมมองกระดานให้ดูมีความลึก/สมจริงขึ้น (ใช้ CSS perspective ล้วน)
+function initModeToggle() {
+  const wrap = document.querySelector('.garden-grid-wrap');
+  const btn = el('modeBtn');
+  if (!wrap || !btn) return;
+  const saved = localStorage.getItem('gardenViewMode');
+  if (saved === '3d') wrap.classList.add('mode-3d');
+  updateLabel();
+
+  btn.addEventListener('click', () => {
+    wrap.classList.toggle('mode-3d');
+    localStorage.setItem('gardenViewMode', wrap.classList.contains('mode-3d') ? '3d' : '2d');
+    updateLabel();
+  });
+
+  function updateLabel() {
+    btn.textContent = wrap.classList.contains('mode-3d') ? '🖼️ โหมด 2D' : '🧊 โหมด 3D';
+  }
+}
+
 // เฟสพระจันทร์ — เรียงจากจันทร์ดับ ไปเต็มดวง แล้ววนกลับ (เสี้ยว/ครึ่ง/เกือบเต็ม/เต็มดวง)
 const MOON_PHASES = [
   { emoji: '🌑', name: 'จันทร์ดับ' },
@@ -440,6 +460,7 @@ function init() {
   initDayNightToggle();
   initMoonPhase();
   initMeteorShower();
+  initModeToggle();
   initReviewButton();
   initSeedBox();
 }

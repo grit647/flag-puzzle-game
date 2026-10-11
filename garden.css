@@ -150,6 +150,7 @@
 .ground {
   background: linear-gradient(180deg, #a3d977, #7bc158);
   padding: 10px 14px 18px;
+  position: relative;
 }
 .grass-edge {
   font-size: 18px;
@@ -161,6 +162,43 @@
   text-align: center;
 }
 
+.mode-btn {
+  position: absolute;
+  top: 10px; right: 14px;
+  z-index: 5;
+  padding: 6px 12px;
+  border-radius: 20px;
+  border: none;
+  background: rgba(255,255,255,0.9);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+}
+
+/* โหมด 3D — ใส่มุมมอง perspective ให้กระดานดูเอียง/มีความลึก เหมือนมองจากมุมสูง */
+.garden-grid-wrap {
+  transition: transform 0.4s ease;
+}
+.garden-grid-wrap.mode-3d {
+  perspective: 900px;
+}
+.garden-grid-wrap.mode-3d .garden-grid {
+  transform: rotateX(32deg) scale(0.92);
+  transform-style: preserve-3d;
+  box-shadow: 0 30px 25px -15px rgba(0,0,0,0.45);
+}
+.garden-grid-wrap.mode-3d .plot {
+  transform: translateZ(6px);
+  box-shadow: 0 10px 10px -4px rgba(0,0,0,0.35);
+}
+.garden-grid-wrap.mode-3d .plot.bloom,
+.garden-grid-wrap.mode-3d .plot.variant-gold,
+.garden-grid-wrap.mode-3d .plot.variant-rainbow {
+  transform: translateZ(14px);
+  box-shadow: 0 16px 14px -6px rgba(0,0,0,0.45);
+}
+
 .garden-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -168,6 +206,7 @@
   background: #8a6a3f;
   padding: 10px;
   border-radius: 14px;
+  transition: transform 0.4s ease, box-shadow 0.4s ease;
 }
 @media (min-width: 420px) {
   .garden-grid { grid-template-columns: repeat(3, 1fr); gap: 16px; }
