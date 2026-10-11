@@ -16,10 +16,74 @@
 }
 .collection-chip .emoji { font-size: 20px; }
 
+.garden-scene {
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  margin-bottom: 14px;
+}
+
+.sky {
+  position: relative;
+  height: 90px;
+  background: linear-gradient(180deg, #7ec8f2, #bfe7fb);
+  overflow: hidden;
+}
+.sun {
+  position: absolute;
+  top: 10px; right: 18px;
+  font-size: 40px;
+  animation: sun-spin 10s linear infinite;
+}
+@keyframes sun-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+.cloud { position: absolute; top: 14px; font-size: 30px; opacity: 0.9; animation: drift 22s linear infinite; }
+.cloud1 { left: -60px; animation-delay: 0s; }
+.cloud2 { left: -60px; top: 36px; font-size: 22px; animation-delay: 9s; animation-duration: 28s; }
+@keyframes drift {
+  from { transform: translateX(0); }
+  to   { transform: translateX(420px); }
+}
+
+.butterfly { position: absolute; font-size: 20px; animation: flutter 6s ease-in-out infinite; }
+.bfly1 { left: 30%; top: 50px; animation-delay: 0s; }
+.bfly2 { left: 65%; top: 30px; animation-delay: 1.5s; animation-duration: 7s; }
+@keyframes flutter {
+  0%, 100% { transform: translate(0, 0) rotate(0deg); }
+  25%      { transform: translate(14px, -10px) rotate(8deg); }
+  50%      { transform: translate(0, -16px) rotate(-6deg); }
+  75%      { transform: translate(-14px, -6px) rotate(6deg); }
+}
+
+.bee { position: absolute; left: 10%; top: 20px; font-size: 18px; animation: buzz 5s ease-in-out infinite; }
+@keyframes buzz {
+  0%, 100% { transform: translate(0, 0); }
+  30%      { transform: translate(40px, 18px); }
+  60%      { transform: translate(90px, -6px); }
+  80%      { transform: translate(140px, 10px); }
+}
+
+.ground {
+  background: linear-gradient(180deg, #a3d977, #7bc158);
+  padding: 10px 14px 18px;
+}
+.grass-edge {
+  font-size: 18px;
+  letter-spacing: 2px;
+  opacity: 0.9;
+  margin-bottom: 10px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-align: center;
+}
+
 .garden-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 12px;
+  background: #8a6a3f;
+  padding: 10px;
+  border-radius: 14px;
 }
 @media (min-width: 420px) {
   .garden-grid { grid-template-columns: repeat(3, 1fr); gap: 16px; }
