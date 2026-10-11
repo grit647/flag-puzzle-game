@@ -4,6 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>เกมต่อจิ๊กซอธงชาติ</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="theme-color" content="#2563eb">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -32,6 +36,7 @@
       <button class="btn" id="startBtn" style="flex:1;">▶️ เริ่มเกม</button>
       <button class="btn secondary" id="statsBtn">🏆 สถิติ</button>
     </div>
+    <button class="btn ghost" id="installBtn" style="width:100%; margin-top:10px; display:none;">📲 โหลดแอปลงเครื่อง</button>
   </div>
 
   <div class="panel" id="gamePanel" style="display:none;">
@@ -39,6 +44,7 @@
       <span class="timer" id="timerDisplay">⏱ 00:00</span>
       <span class="piece-count" id="pieceCountDisplay"></span>
     </div>
+    <p id="gameBestLabel" style="text-align:center; color:#64748b; font-size:12px; margin:0 0 8px;"></p>
     <div class="row" style="margin-bottom:10px;">
       <button class="btn ghost" id="previewBtn" style="flex:1;">👁️ ดูตัวอย่างธง</button>
     </div>

@@ -134,6 +134,18 @@ async function startGame() {
   updateTimerDisplay();
   updatePieceCount();
   updatePreviewButton();
+  updateGameBestLabel();
+}
+
+// โชว์สถิติเก่าของธง+ระดับนี้ "ระหว่างเล่น" ด้วย (เดิมโชว์แค่หน้าเลือกก่อนเริ่ม) ไม่ต้องย้อนกลับไปดู
+function updateGameBestLabel() {
+  const label = el('gameBestLabel');
+  if (!label) return;
+  const stats = loadStats();
+  const entry = stats[`${state.countryCode}_${state.diffKey}`];
+  label.textContent = entry
+    ? `🏆 สถิติเดิมที่ต้องเอาชนะ: ${formatTime(entry.bestTimeSec)}`
+    : 'ยังไม่มีสถิติของธงนี้ — เป็นคนแรกเลย!';
 }
 
 function updatePreviewButton() {
@@ -425,6 +437,7 @@ function checkWin(flagUrl) {
   const finalTime = state.elapsedSec;
   const isNewBest = saveStats(state.countryCode, state.diffKey, finalTime);
   showWinModal(finalTime, isNewBest);
+  updateGameBestLabel();
 }
 
 function saveStats(code, diffKey, timeSec) {
@@ -501,10 +514,49 @@ function renderStats() {
   content.innerHTML = html;
 }
 
+// ----- ติดตั้งเป็นแอป (PWA) บนมือถือ -----
+let deferredInstallPrompt = null;
+
+function initInstallButton() {
+  const btn = el('installBtn');
+  if (!btn) return;
+
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredInstallPrompt = e;
+    btn.style.display = 'block';
+  });
+
+  window.addEventListener('appinstalled', () => {
+    deferredInstallPrompt = null;
+    btn.style.display = 'none';
+  });
+
+  btn.addEventListener('click', async () => {
+    if (deferredInstallPrompt) {
+      deferredInstallPrompt.prompt();
+      await deferredInstallPrompt.userChoice;
+      deferredInstallPrompt = null;
+      btn.style.display = 'none';
+      return;
+    }
+    // เบราว์เซอร์ที่ไม่รองรับ beforeinstallprompt (เช่น iOS Safari) — บอกวิธีติดตั้งเองแทน
+    const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+    alert(isIOS
+      ? 'บน iPhone/iPad: แตะปุ่มแชร์ (รูปสี่เหลี่ยมมีลูกศรชี้ขึ้น) แล้วเลือก "เพิ่มไปยังหน้าจอโฮม"'
+      : 'เปิดเมนู ⋮ ของเบราว์เซอร์ แล้วเลือก "ติดตั้งแอป" หรือ "เพิ่มไปยังหน้าจอโฮม"');
+  });
+
+  if (navigator.serviceWorker) {
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+  }
+}
+
 function init() {
   initCountrySelect();
   initDifficultyButtons();
   initTrayPanning();
+  initInstallButton();
   el('startBtn').addEventListener('click', startGame);
   el('randomCountryBtn').addEventListener('click', () => {
     const c = COUNTRIES[Math.floor(Math.random() * COUNTRIES.length)];
