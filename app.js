@@ -15,6 +15,7 @@ let state = {
   edgeData: null,   // ทิศปุ่ม/ร่องของแต่ละเส้นขอบ สุ่มใหม่ทุกครั้งที่เริ่มเกม
   boardCells: [],   // length = total; null or pieceIndex
   trayPieces: [],   // array of pieceIndex still in tray
+  previewsLeft: 5,  // จำนวนครั้งที่ยังดูตัวอย่างธงได้ในเกมนี้
   startTime: null,
   timerInterval: null,
   elapsedSec: 0,
@@ -103,18 +104,36 @@ async function startGame() {
 
   state.boardCells = new Array(state.total).fill(null);
   state.trayPieces = shuffle([...Array(state.total).keys()]);
+  state.previewsLeft = 5;
   state.elapsedSec = 0;
   state.playing = true;
   state.startTime = Date.now();
   if (state.timerInterval) clearInterval(state.timerInterval);
   state.timerInterval = setInterval(tickTimer, 1000);
 
+  state.flagUrl = flagUrl;
   el('gamePanel').style.display = 'block';
   el('statsPanel').style.display = 'none';
   renderBoard(flagUrl);
   renderTray(flagUrl);
   updateTimerDisplay();
   updatePieceCount();
+  updatePreviewButton();
+}
+
+function updatePreviewButton() {
+  const btn = el('previewBtn');
+  btn.textContent = `👁️ ดูตัวอย่างธง (เหลือ ${state.previewsLeft} ครั้ง)`;
+  btn.disabled = state.previewsLeft <= 0;
+}
+
+function openPreview() {
+  if (state.previewsLeft <= 0) return;
+  state.previewsLeft -= 1;
+  updatePreviewButton();
+  el('previewImg').src = state.flagUrl;
+  el('previewCountLabel').textContent = `เหลือดูได้อีก ${state.previewsLeft} ครั้ง`;
+  el('previewModal').style.display = 'flex';
 }
 
 function tickTimer() {
@@ -463,6 +482,10 @@ function init() {
   });
   el('winCloseBtn').addEventListener('click', () => {
     el('winModal').style.display = 'none';
+  });
+  el('previewBtn').addEventListener('click', openPreview);
+  el('previewCloseBtn').addEventListener('click', () => {
+    el('previewModal').style.display = 'none';
   });
 }
 

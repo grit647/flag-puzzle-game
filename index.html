@@ -38,6 +38,9 @@
       <span class="timer" id="timerDisplay">⏱ 00:00</span>
       <span class="piece-count" id="pieceCountDisplay"></span>
     </div>
+    <div class="row" style="margin-bottom:10px;">
+      <button class="btn ghost" id="previewBtn" style="flex:1;">👁️ ดูตัวอย่างธง</button>
+    </div>
     <div class="hint">กดค้างที่ชิ้นส่วนแล้วลากไปวางบนกระดานได้เลย (ลากชิ้นบนกระดานเพื่อย้าย/สลับตำแหน่ง หรือลากกลับมาที่ถาดเพื่อเอาคืน)</div>
     <div class="game-area">
       <div id="board"></div>
@@ -60,6 +63,15 @@
     <div class="big-time" id="winTimeLabel"></div>
     <p id="winBestLabel" class="new-best"></p>
     <button class="btn" id="winCloseBtn" style="margin-top:12px; width:100%;">เล่นต่อ</button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="previewModal" style="display:none;">
+  <div class="modal-box">
+    <h2>👁️ ตัวอย่างธง</h2>
+    <img id="previewImg" src="" alt="ตัวอย่างธง" style="max-width:100%; border-radius:8px; border:2px solid #cbd5e1; margin:10px 0;">
+    <p id="previewCountLabel" style="color:#64748b; font-size:13px;"></p>
+    <button class="btn" id="previewCloseBtn" style="margin-top:8px; width:100%;">ปิด</button>
   </div>
 </div>
 
