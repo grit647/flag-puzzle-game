@@ -111,7 +111,7 @@ select {
 }
 
 /* จอกว้างพอ: วางถาดชิ้นส่วนไว้ด้านขวาของกระดาน เห็นพร้อมกันไม่ต้องเลื่อน */
-@media (min-width: 720px) {
+@media (min-width: 560px) {
   .game-area { flex-direction: row; align-items: flex-start; justify-content: center; }
   #tray {
     flex: 1 1 220px;
