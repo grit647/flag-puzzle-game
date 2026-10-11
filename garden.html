@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>สวนดอกไม้ของน้องตัง</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="theme-color" content="#16a34a">
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="garden.css">
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>🌷 สวนดอกไม้ของน้องตัง</h1>
+    <p>ปลูกเมล็ด รดน้ำ 2 ครั้ง แล้วเก็บดอกไม้สะสมให้ครบทุกแบบ!</p>
+  </header>
+
+  <div class="panel">
+    <label style="display:block; margin-bottom:8px;">🎮 เลือกเกม:</label>
+    <div class="row">
+      <button class="game-select-btn" onclick="location.href='index.html'">🧩 ต่อจิ๊กซอธงชาติ</button>
+      <button class="game-select-btn active">🌷 สวนดอกไม้</button>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h3 style="margin-top:0;">🧺 ดอกไม้ที่เก็บได้ทั้งหมด: <span id="totalCount">0</span> ดอก</h3>
+    <div id="collectionRow" class="collection-row"></div>
+  </div>
+
+  <div class="panel">
+    <div id="gardenGrid" class="garden-grid"></div>
+  </div>
+
+  <footer>เล่นได้ฟรี ไม่เก็บข้อมูลขึ้นเซิร์ฟเวอร์ — สถิติบันทึกไว้ในเครื่องนี้เท่านั้น</footer>
+</div>
+
+<script src="garden.js"></script>
+</body>
+</html>
