@@ -50,8 +50,26 @@
   </div>
 
   <div class="panel">
+    <div class="row">
+      <button class="gender-btn active" id="presetModeBtn">👚 ชุดสำเร็จรูป</button>
+      <button class="gender-btn" id="sandboxModeBtn">🎨 สร้างชุดเอง</button>
+    </div>
+  </div>
+
+  <div class="panel" id="presetPanel">
     <label style="display:block; margin-bottom:8px;">👚 เลือกชุด:</label>
     <div id="outfitGrid" class="outfit-grid"></div>
+  </div>
+
+  <div class="panel" id="sandboxPanel" style="display:none;">
+    <label style="display:block; margin-bottom:8px;">👕 สีเสื้อ:</label>
+    <div id="shirtColorRow" class="swatch-row"></div>
+    <label style="display:block; margin:14px 0 8px;">ส่วนล่าง:</label>
+    <div class="row" style="margin-bottom:10px;">
+      <button class="gender-btn active" id="pantsTypeBtn">👖 กางเกง</button>
+      <button class="gender-btn" id="skirtTypeBtn">👗 กระโปรง</button>
+    </div>
+    <div id="bottomColorRow" class="swatch-row"></div>
   </div>
 
   <footer>เล่นได้ฟรี ไม่เก็บข้อมูลขึ้นเซิร์ฟเวอร์ — ชุดที่เลือกไว้บันทึกในเครื่องนี้เท่านั้น</footer>

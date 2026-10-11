@@ -21,6 +21,11 @@ const FEMALE_OUTFITS = [
 
 let currentGender = 'male';
 let currentOutfitKey = MALE_OUTFITS[0].key;
+let currentMode = 'preset'; // 'preset' หรือ 'sandbox'
+
+const SHIRT_COLORS = ['#2563eb', '#dc2626', '#16a34a', '#fde047', '#f472b6', '#c084fc', '#ffffff', '#334155', '#f87171', '#92400e'];
+const BOTTOM_COLORS = ['#1e293b', '#1e3a8a', '#365314', '#64748b', '#38bdf8', '#f9a8d4', '#ffffff', '#0f172a', '#c084fc', '#f472b6'];
+let sandbox = { shirtColor: SHIRT_COLORS[0], bottomColor: BOTTOM_COLORS[0], bottomType: 'pants' };
 
 const el = (id) => document.getElementById(id);
 
@@ -34,26 +39,30 @@ function loadState() {
     if (saved) {
       currentGender = saved.gender || 'male';
       currentOutfitKey = saved.outfitKey || outfitsForGender(currentGender)[0].key;
+      currentMode = saved.mode || 'preset';
+      if (saved.sandbox) sandbox = saved.sandbox;
     }
   } catch (e) { /* เริ่มใหม่ถ้าอ่านไม่ได้ */ }
 }
 
 function saveState() {
-  localStorage.setItem(DRESSUP_STATE_KEY, JSON.stringify({ gender: currentGender, outfitKey: currentOutfitKey }));
+  localStorage.setItem(DRESSUP_STATE_KEY, JSON.stringify({
+    gender: currentGender, outfitKey: currentOutfitKey, mode: currentMode, sandbox,
+  }));
 }
 
 function applyOutfit(outfit) {
   const shirtEl = el('dollShirt');
   const bottomEl = el('dollBottom');
   bottomEl.className = `doll-bottom ${outfit.type}`;
-  bottomEl.style.background = outfit.bottom;
+  bottomEl.style.backgroundColor = outfit.bottom; // ใช้ backgroundColor เพื่อไม่ไปทับลายผ้า (background-image) ที่ตั้งไว้ใน CSS
   if (outfit.type === 'dress') {
     shirtEl.style.opacity = '0';
   } else {
     shirtEl.style.opacity = '1';
-    shirtEl.style.background = outfit.shirt;
+    shirtEl.style.backgroundColor = outfit.shirt;
   }
-  el('outfitName').textContent = outfit.name;
+  if (outfit.name) el('outfitName').textContent = outfit.name;
 }
 
 function renderDollGender() {
@@ -110,9 +119,78 @@ function selectGender(gender) {
 }
 
 function randomOutfit() {
+  if (currentMode === 'sandbox') {
+    sandbox.shirtColor = SHIRT_COLORS[Math.floor(Math.random() * SHIRT_COLORS.length)];
+    sandbox.bottomColor = BOTTOM_COLORS[Math.floor(Math.random() * BOTTOM_COLORS.length)];
+    sandbox.bottomType = Math.random() < 0.5 ? 'pants' : 'skirt';
+    applySandbox();
+    renderSandboxControls();
+    saveState();
+    return;
+  }
   const list = outfitsForGender(currentGender);
   const outfit = list[Math.floor(Math.random() * list.length)];
   selectOutfit(outfit);
+}
+
+// ----- โหมดสร้างชุดเอง (sandbox) — เลือกสีเสื้อ + สีกางเกง/กระโปรงแยกกันอิสระ -----
+function applySandbox() {
+  applyOutfit({ shirt: sandbox.shirtColor, bottom: sandbox.bottomColor, type: sandbox.bottomType });
+  el('outfitName').textContent = 'ชุดที่สร้างเอง';
+}
+
+function renderSwatchRow(rowId, colors, selectedColor, onPick) {
+  const row = el(rowId);
+  row.innerHTML = '';
+  colors.forEach((color) => {
+    const btn = document.createElement('button');
+    btn.className = 'color-swatch';
+    if (color === selectedColor) btn.classList.add('selected');
+    btn.style.background = color;
+    btn.addEventListener('click', () => onPick(color));
+    row.appendChild(btn);
+  });
+}
+
+function renderSandboxControls() {
+  renderSwatchRow('shirtColorRow', SHIRT_COLORS, sandbox.shirtColor, (color) => {
+    sandbox.shirtColor = color;
+    applySandbox();
+    renderSandboxControls();
+    saveState();
+  });
+  renderSwatchRow('bottomColorRow', BOTTOM_COLORS, sandbox.bottomColor, (color) => {
+    sandbox.bottomColor = color;
+    applySandbox();
+    renderSandboxControls();
+    saveState();
+  });
+  el('pantsTypeBtn').classList.toggle('active', sandbox.bottomType === 'pants');
+  el('skirtTypeBtn').classList.toggle('active', sandbox.bottomType === 'skirt');
+}
+
+function setBottomType(type) {
+  sandbox.bottomType = type;
+  applySandbox();
+  renderSandboxControls();
+  saveState();
+}
+
+function setMode(mode) {
+  currentMode = mode;
+  el('presetModeBtn').classList.toggle('active', mode === 'preset');
+  el('sandboxModeBtn').classList.toggle('active', mode === 'sandbox');
+  el('presetPanel').style.display = mode === 'preset' ? 'block' : 'none';
+  el('sandboxPanel').style.display = mode === 'sandbox' ? 'block' : 'none';
+  if (mode === 'preset') {
+    const list = outfitsForGender(currentGender);
+    const outfit = list.find((o) => o.key === currentOutfitKey) || list[0];
+    applyOutfit(outfit);
+  } else {
+    applySandbox();
+    renderSandboxControls();
+  }
+  saveState();
 }
 
 function init() {
@@ -120,15 +198,31 @@ function init() {
   el('maleBtn').addEventListener('click', () => selectGender('male'));
   el('femaleBtn').addEventListener('click', () => selectGender('female'));
   el('randomOutfitBtn').addEventListener('click', randomOutfit);
+  el('presetModeBtn').addEventListener('click', () => setMode('preset'));
+  el('sandboxModeBtn').addEventListener('click', () => setMode('sandbox'));
+  el('pantsTypeBtn').addEventListener('click', () => setBottomType('pants'));
+  el('skirtTypeBtn').addEventListener('click', () => setBottomType('skirt'));
 
   el('maleBtn').classList.toggle('active', currentGender === 'male');
   el('femaleBtn').classList.toggle('active', currentGender === 'female');
   renderDollGender();
-  const list = outfitsForGender(currentGender);
-  const outfit = list.find((o) => o.key === currentOutfitKey) || list[0];
-  currentOutfitKey = outfit.key;
-  applyOutfit(outfit);
+
+  el('presetModeBtn').classList.toggle('active', currentMode === 'preset');
+  el('sandboxModeBtn').classList.toggle('active', currentMode === 'sandbox');
+  el('presetPanel').style.display = currentMode === 'preset' ? 'block' : 'none';
+  el('sandboxPanel').style.display = currentMode === 'sandbox' ? 'block' : 'none';
+
   renderOutfitGrid();
+  renderSandboxControls();
+
+  if (currentMode === 'sandbox') {
+    applySandbox();
+  } else {
+    const list = outfitsForGender(currentGender);
+    const outfit = list.find((o) => o.key === currentOutfitKey) || list[0];
+    currentOutfitKey = outfit.key;
+    applyOutfit(outfit);
+  }
 }
 
 init();
