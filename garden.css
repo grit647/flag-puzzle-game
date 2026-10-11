@@ -15,6 +15,18 @@
   gap: 6px;
 }
 .collection-chip .emoji { font-size: 20px; }
+.sell-btn {
+  margin-left: 6px;
+  padding: 4px 8px;
+  border-radius: 8px;
+  border: none;
+  background: #16a34a;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.sell-btn:disabled { background: #cbd5e1; color: #94a3b8; cursor: not-allowed; }
 
 .garden-scene {
   position: relative;

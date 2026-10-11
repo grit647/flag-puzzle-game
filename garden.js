@@ -40,6 +40,8 @@ let totalHarvested = 0;
 let points = 0; // แต้มสะสม ได้จากการเก็บผลผลิต ใช้ซื้อกล่องสุ่มเมล็ดได้
 const SEED_BOX_COST = 50;
 const SEED_BOX_AMOUNT = 7;
+const SELL_VALUE_NORMAL = 5;  // ขายดอกไม้/ต้นไม้ธรรมดา ได้ 5 แต้มต่อชิ้น
+const SELL_VALUE_FANTASY = 20; // ของแฟนตาซีหายาก ขายได้แพงกว่า
 
 const el = (id) => document.getElementById(id);
 
@@ -123,17 +125,38 @@ function showFloatPlus(x, y, emoji) {
   setTimeout(() => span.remove(), 900);
 }
 
+function sellValueFor(kind) {
+  return kind.fantasy ? SELL_VALUE_FANTASY : SELL_VALUE_NORMAL;
+}
+
 function renderCollectionGroup(rowId, kinds) {
   const row = el(rowId);
   if (!row) return;
   row.innerHTML = '';
   kinds.forEach((kind) => {
     const count = collection[kind.key] || 0;
+    const value = sellValueFor(kind);
     const chip = document.createElement('div');
     chip.className = 'collection-chip';
     chip.innerHTML = `<span class="emoji">${kind.emoji}</span><span>${kind.name} × ${count}</span>`;
+    const sellBtn = document.createElement('button');
+    sellBtn.className = 'sell-btn';
+    sellBtn.textContent = `ขาย +${value}💰`;
+    sellBtn.disabled = count <= 0;
+    sellBtn.addEventListener('click', () => sellOne(kind));
+    chip.appendChild(sellBtn);
     row.appendChild(chip);
   });
+}
+
+// ขายดอกไม้/ต้นไม้ 1 ชิ้น แลกเป็นแต้ม — ของแฟนตาซีขายได้แพงกว่าของธรรมดา
+function sellOne(kind) {
+  const count = collection[kind.key] || 0;
+  if (count <= 0) return;
+  collection[kind.key] = count - 1;
+  points += sellValueFor(kind);
+  saveState();
+  renderCollection();
 }
 
 function renderCollection() {
