@@ -28,6 +28,10 @@
 
   <div class="panel">
     <h3 style="margin-top:0;">🧺 เก็บได้ทั้งหมด: <span id="totalCount">0</span> ชิ้น</h3>
+    <div class="row" style="align-items:center; margin-bottom:10px;">
+      <span style="font-weight:700; color:#b45309;">💰 แต้มสะสม: <span id="pointsCount">0</span> แต้ม</span>
+      <button class="btn" id="seedBoxBtn" style="flex:1; min-width:180px;">🎁 เปิดกล่องสุ่มเมล็ด (50 แต้ม)</button>
+    </div>
     <p style="margin:0 0 6px; font-size:13px; color:#64748b; font-weight:700;">🌸 ดอกไม้</p>
     <div id="collectionRow" class="collection-row"></div>
     <p style="margin:12px 0 6px; font-size:13px; color:#64748b; font-weight:700;">🌳 ต้นไม้</p>
@@ -56,6 +60,15 @@
   </div>
 
   <footer>เล่นได้ฟรี ไม่เก็บข้อมูลขึ้นเซิร์ฟเวอร์ — สถิติบันทึกไว้ในเครื่องนี้เท่านั้น</footer>
+</div>
+
+<div class="modal-overlay" id="seedBoxModal" style="display:none;">
+  <div class="modal-box">
+    <h2>🎁 กล่องสุ่มเมล็ด</h2>
+    <p id="seedBoxMsg" style="color:#475569; font-size:14px;"></p>
+    <div id="seedBoxResult" class="review-garden" style="min-height:70px;"></div>
+    <button class="btn" id="seedBoxCloseBtn" style="margin-top:12px; width:100%;">ปิด</button>
+  </div>
 </div>
 
 <div class="modal-overlay" id="reviewModal" style="display:none;">

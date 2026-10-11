@@ -209,6 +209,10 @@
   font-size: 26px;
   line-height: 1;
 }
+.review-garden span.seed-box-fantasy {
+  animation: fantasy-spin 1.2s ease-in-out infinite;
+  filter: drop-shadow(0 0 6px #c084fc);
+}
 
 .float-plus {
   position: fixed;

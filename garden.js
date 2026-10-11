@@ -37,6 +37,9 @@ const FANTASY_CHANCE = 0.15; // โอกาสได้ของแฟนตา
 let plots = new Array(PLOT_COUNT).fill(null);
 let collection = {}; // { roseKey: count, ... }
 let totalHarvested = 0;
+let points = 0; // แต้มสะสม ได้จากการเก็บผลผลิต ใช้ซื้อกล่องสุ่มเมล็ดได้
+const SEED_BOX_COST = 50;
+const SEED_BOX_AMOUNT = 7;
 
 const el = (id) => document.getElementById(id);
 
@@ -46,12 +49,13 @@ function loadState() {
     if (saved) {
       collection = saved.collection || {};
       totalHarvested = saved.totalHarvested || 0;
+      points = saved.points || 0;
     }
   } catch (e) { /* เริ่มใหม่ถ้าอ่านไม่ได้ */ }
 }
 
 function saveState() {
-  localStorage.setItem(GARDEN_STATE_KEY, JSON.stringify({ collection, totalHarvested }));
+  localStorage.setItem(GARDEN_STATE_KEY, JSON.stringify({ collection, totalHarvested, points }));
 }
 
 function randomKind() {
@@ -100,6 +104,7 @@ function onPlotClick(i, e) {
     const harvestedKind = ALL_KINDS.find((k) => k.key === plot.kind);
     collection[plot.kind] = (collection[plot.kind] || 0) + 1;
     totalHarvested += 1;
+    points += 1; // เก็บได้ 1 ชิ้น = ได้ 1 แต้ม เอาไปซื้อกล่องสุ่มเมล็ดได้
     plots[i] = null;
     saveState();
     showFloatPlus(e.clientX, e.clientY, harvestedKind.emoji);
@@ -136,6 +141,65 @@ function renderCollection() {
   renderCollectionGroup('collectionRow', FLOWER_KINDS);
   renderCollectionGroup('treeCollectionRow', TREE_KINDS);
   renderCollectionGroup('fantasyCollectionRow', FANTASY_KINDS);
+  updatePointsDisplay();
+}
+
+function updatePointsDisplay() {
+  const pointsLabel = el('pointsCount');
+  if (pointsLabel) pointsLabel.textContent = String(points);
+  const btn = el('seedBoxBtn');
+  if (btn) btn.disabled = points < SEED_BOX_COST;
+}
+
+// กล่องสุ่มเมล็ด — จ่าย 50 แต้ม ได้เมล็ดสุ่ม 7 เมล็ด ปลูกลงช่องว่างให้ทันที
+// (ถ้าช่องว่างไม่พอ 7 ช่อง จะปลูกเท่าที่มีที่ว่างให้)
+function openSeedBox() {
+  if (points < SEED_BOX_COST) return;
+  const emptyIndexes = plots.map((p, i) => (p === null ? i : -1)).filter((i) => i !== -1);
+  if (emptyIndexes.length === 0) {
+    showSeedBoxResult([], true);
+    return;
+  }
+  points -= SEED_BOX_COST;
+  const planCount = Math.min(SEED_BOX_AMOUNT, emptyIndexes.length);
+  const shuffledEmpty = emptyIndexes.sort(() => Math.random() - 0.5).slice(0, planCount);
+  const obtained = [];
+  shuffledEmpty.forEach((idx) => {
+    const kind = randomKind();
+    plots[idx] = { stage: 1, kind: kind.key };
+    obtained.push(kind);
+  });
+  saveState();
+  renderGrid();
+  renderCollection();
+  showSeedBoxResult(obtained, false);
+}
+
+function showSeedBoxResult(obtained, noSpace) {
+  const content = el('seedBoxResult');
+  const msg = el('seedBoxMsg');
+  content.innerHTML = '';
+  if (noSpace) {
+    msg.textContent = '⚠️ ไม่มีช่องว่างให้ปลูกเลย ไปเก็บผลผลิตในสวนก่อนนะครับ แล้วค่อยกลับมาเปิดกล่องใหม่!';
+  } else {
+    msg.textContent = obtained.length < SEED_BOX_AMOUNT
+      ? `ปลูกได้ ${obtained.length} เมล็ด (ช่องว่างไม่พอ 7 ช่อง)`
+      : `ได้เมล็ดใหม่ ${obtained.length} ต้น ปลูกลงสวนให้แล้ว รดน้ำให้โตกันเลย!`;
+    obtained.forEach((kind) => {
+      const span = document.createElement('span');
+      span.textContent = kind.emoji;
+      if (kind.fantasy) span.classList.add('seed-box-fantasy');
+      content.appendChild(span);
+    });
+  }
+  el('seedBoxModal').style.display = 'flex';
+}
+
+function initSeedBox() {
+  const btn = el('seedBoxBtn');
+  const closeBtn = el('seedBoxCloseBtn');
+  if (btn) btn.addEventListener('click', openSeedBox);
+  if (closeBtn) closeBtn.addEventListener('click', () => { el('seedBoxModal').style.display = 'none'; });
 }
 
 // สร้างดาวสุ่มตำแหน่งไว้ในท้องฟ้า (โชว์เฉพาะตอนกลางคืน)
@@ -205,6 +269,7 @@ function init() {
   initStars();
   initDayNightToggle();
   initReviewButton();
+  initSeedBox();
 }
 
 init();
