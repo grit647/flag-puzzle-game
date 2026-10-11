@@ -170,6 +170,28 @@
 .plot.bloom { background: linear-gradient(180deg, #fff1f8, #ffe4f1); border-color: #f9a8d4; }
 .plot.bloom .plot-hint { color: #be185d; }
 
+/* ของแฟนตาซีหายาก — มีประกายรุ้งวิบวับรอบๆ ให้ดูพิเศษกว่าชิ้นปกติ */
+.plot.fantasy {
+  background: linear-gradient(135deg, #fde68a, #f9a8d4, #a5b4fc, #86efac);
+  background-size: 300% 300%;
+  border-color: #c084fc;
+  animation: fantasy-glow 3s ease infinite, fantasy-pulse 1.6s ease-in-out infinite;
+}
+.plot.fantasy .plot-hint { color: #7e22ce; }
+.plot.fantasy .plot-emoji { animation: fantasy-spin 2.4s ease-in-out infinite; }
+@keyframes fantasy-glow {
+  0%, 100% { background-position: 0% 50%; }
+  50%      { background-position: 100% 50%; }
+}
+@keyframes fantasy-pulse {
+  0%, 100% { box-shadow: 0 0 6px 2px rgba(192,132,252,0.5); }
+  50%      { box-shadow: 0 0 16px 6px rgba(192,132,252,0.8); }
+}
+@keyframes fantasy-spin {
+  0%, 100% { transform: scale(1) rotate(0deg); }
+  50%      { transform: scale(1.12) rotate(6deg); }
+}
+
 .float-plus {
   position: fixed;
   pointer-events: none;

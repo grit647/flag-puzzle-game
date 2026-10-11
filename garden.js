@@ -19,7 +19,18 @@ const TREE_KINDS = [
   { key: 'cactus', emoji: '🌵', name: 'กระบองเพชร' },
 ];
 
-const ALL_KINDS = [...FLOWER_KINDS, ...TREE_KINDS];
+// ต้นไม้แฟนตาซี — หายากกว่าแบบธรรมดา มีประกายวิบวับตอนบาน
+const FANTASY_KINDS = [
+  { key: 'mushroom', emoji: '🍄', name: 'เห็ดเวทมนตร์', fantasy: true },
+  { key: 'crystal', emoji: '🔮', name: 'ต้นไม้คริสตัล', fantasy: true },
+  { key: 'rainbow', emoji: '🌈', name: 'ต้นไม้สายรุ้ง', fantasy: true },
+  { key: 'star', emoji: '🌟', name: 'ต้นไม้ดวงดาว', fantasy: true },
+  { key: 'clover', emoji: '🍀', name: 'โคลเวอร์นำโชค', fantasy: true },
+];
+
+const NORMAL_KINDS = [...FLOWER_KINDS, ...TREE_KINDS];
+const ALL_KINDS = [...FLOWER_KINDS, ...TREE_KINDS, ...FANTASY_KINDS];
+const FANTASY_CHANCE = 0.15; // โอกาสได้ของแฟนตาซีหายาก 15%
 
 // แต่ละช่อง: null = ว่าง, หรือ { stage: 1|2|3, kind }
 // stage 1 = 🌱 เมล็ดงอก (ปลูกแล้ว), stage 2 = 🌿 ต้นกล้า (รดน้ำ 1 ครั้ง), stage 3 = บาน (รดน้ำครบ)
@@ -44,7 +55,10 @@ function saveState() {
 }
 
 function randomKind() {
-  return ALL_KINDS[Math.floor(Math.random() * ALL_KINDS.length)];
+  if (Math.random() < FANTASY_CHANCE) {
+    return FANTASY_KINDS[Math.floor(Math.random() * FANTASY_KINDS.length)];
+  }
+  return NORMAL_KINDS[Math.floor(Math.random() * NORMAL_KINDS.length)];
 }
 
 function renderGrid() {
@@ -63,7 +77,9 @@ function renderGrid() {
     } else {
       cell.classList.add('bloom');
       const kind = ALL_KINDS.find((k) => k.key === plot.kind);
-      cell.innerHTML = `<div class="plot-emoji">${kind.emoji}</div><div class="plot-hint">แตะเพื่อเก็บ!</div>`;
+      if (kind.fantasy) cell.classList.add('fantasy');
+      const hintText = kind.fantasy ? '✨ ของหายาก! แตะเก็บเลย!' : 'แตะเพื่อเก็บ!';
+      cell.innerHTML = `<div class="plot-emoji">${kind.emoji}</div><div class="plot-hint">${hintText}</div>`;
     }
     cell.addEventListener('click', (e) => onPlotClick(i, e));
     grid.appendChild(cell);
@@ -119,6 +135,7 @@ function renderCollection() {
   el('totalCount').textContent = String(totalHarvested);
   renderCollectionGroup('collectionRow', FLOWER_KINDS);
   renderCollectionGroup('treeCollectionRow', TREE_KINDS);
+  renderCollectionGroup('fantasyCollectionRow', FANTASY_KINDS);
 }
 
 // สร้างดาวสุ่มตำแหน่งไว้ในท้องฟ้า (โชว์เฉพาะตอนกลางคืน)
