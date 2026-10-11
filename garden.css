@@ -192,6 +192,24 @@
   50%      { transform: scale(1.12) rotate(6deg); }
 }
 
+.review-box { max-width: 420px; }
+.review-garden {
+  background: linear-gradient(180deg, #bfe7fb 0%, #bfe7fb 30%, #a3d977 30%, #7bc158 100%);
+  border-radius: 12px;
+  border: 3px solid #86c98a;
+  padding: 16px 10px 10px;
+  min-height: 140px;
+  display: flex;
+  flex-wrap: wrap;
+  align-content: flex-end;
+  justify-content: center;
+  gap: 4px;
+}
+.review-garden span {
+  font-size: 26px;
+  line-height: 1;
+}
+
 .float-plus {
   position: fixed;
   pointer-events: none;

@@ -34,6 +34,7 @@
     <div id="treeCollectionRow" class="collection-row"></div>
     <p style="margin:12px 0 6px; font-size:13px; color:#9333ea; font-weight:700;">✨ ของแฟนตาซี (หายาก!)</p>
     <div id="fantasyCollectionRow" class="collection-row"></div>
+    <button class="btn ghost" id="reviewBtn" style="width:100%; margin-top:14px;">🖼️ ดูสวนของฉัน (รีวิว)</button>
   </div>
 
   <div class="garden-scene" id="gardenScene">
@@ -55,6 +56,15 @@
   </div>
 
   <footer>เล่นได้ฟรี ไม่เก็บข้อมูลขึ้นเซิร์ฟเวอร์ — สถิติบันทึกไว้ในเครื่องนี้เท่านั้น</footer>
+</div>
+
+<div class="modal-overlay" id="reviewModal" style="display:none;">
+  <div class="modal-box review-box">
+    <h2>🖼️ สวนของฉัน</h2>
+    <p id="reviewEmptyMsg" style="color:#64748b; font-size:13px;"></p>
+    <div id="reviewGarden" class="review-garden"></div>
+    <button class="btn" id="reviewCloseBtn" style="margin-top:12px; width:100%;">ปิด</button>
+  </div>
 </div>
 
 <script src="garden.js"></script>

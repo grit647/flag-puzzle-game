@@ -171,12 +171,40 @@ function initDayNightToggle() {
   }
 }
 
+// โชว์ "สวนของฉัน" แบบภาพรวม — เอาทุกอย่างที่เก็บได้มาวางรวมกันเป็นภาพสวนจริง
+function openReviewGarden() {
+  const content = el('reviewGarden');
+  const emptyMsg = el('reviewEmptyMsg');
+  content.innerHTML = '';
+  let any = false;
+  ALL_KINDS.forEach((kind) => {
+    const count = collection[kind.key] || 0;
+    const showCount = Math.min(count, 14); // กันล้นจอถ้าเก็บเยอะมาก
+    for (let i = 0; i < showCount; i++) {
+      const span = document.createElement('span');
+      span.textContent = kind.emoji;
+      content.appendChild(span);
+      any = true;
+    }
+  });
+  emptyMsg.textContent = any ? '' : 'ยังไม่มีอะไรในสวนเลย ลองปลูกแล้วเก็บดูก่อนนะครับ!';
+  el('reviewModal').style.display = 'flex';
+}
+
+function initReviewButton() {
+  const btn = el('reviewBtn');
+  const closeBtn = el('reviewCloseBtn');
+  if (btn) btn.addEventListener('click', openReviewGarden);
+  if (closeBtn) closeBtn.addEventListener('click', () => { el('reviewModal').style.display = 'none'; });
+}
+
 function init() {
   loadState();
   renderGrid();
   renderCollection();
   initStars();
   initDayNightToggle();
+  initReviewButton();
 }
 
 init();
