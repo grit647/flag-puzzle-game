@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>เกมหนีเชื้อของน้องตัง</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="theme-color" content="#dc2626">
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="dodge.css">
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>🦸 เกมหนีเชื้อของน้องตัง</h1>
+    <p>ลากตัวละครของเราหลบตัวที่ติดเชื้อ (มีหัวใจบอกความอันตราย) ให้รอดนานที่สุด!</p>
+  </header>
+
+  <div class="panel">
+    <label style="display:block; margin-bottom:8px;">🎮 เลือกเกม:</label>
+    <div class="row">
+      <button class="game-select-btn" onclick="location.href='index.html'">🧩 ต่อจิ๊กซอธงชาติ</button>
+      <button class="game-select-btn" onclick="location.href='garden.html'">🌷 สวนดอกไม้</button>
+      <button class="game-select-btn" onclick="location.href='dressup.html'">👗 แต่งตัว</button>
+      <button class="game-select-btn active">🦠 หนีเชื้อ</button>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="row" style="align-items:center;">
+      <span style="font-weight:800; font-size:18px;" id="heartsDisplay">❤️❤️❤️</span>
+      <span style="font-weight:700; color:#475569;">⏱ รอดมา: <span id="survivalTime">0</span> วิ</span>
+      <span style="font-weight:700; color:#b45309;">🏆 สถิติ: <span id="bestTime">0</span> วิ</span>
+    </div>
+    <button class="btn" id="startDodgeBtn" style="width:100%; margin-top:10px;">▶️ เริ่มเกม</button>
+  </div>
+
+  <div class="panel">
+    <div id="dodgeArena" class="dodge-arena"></div>
+    <p class="hint">ลาก/แตะค้างที่ตัวละครของเราแล้วลากหลบตัวติดเชื้อ (มีหัวใจลอยอยู่ด้านบน)</p>
+  </div>
+
+  <footer>เล่นได้ฟรี ไม่เก็บข้อมูลขึ้นเซิร์ฟเวอร์ — สถิติบันทึกไว้ในเครื่องนี้เท่านั้น</footer>
+</div>
+
+<div class="modal-overlay" id="gameOverModal" style="display:none;">
+  <div class="modal-box">
+    <h2>💥 ติดเชื้อแล้ว!</h2>
+    <p>รอดมาได้ <span id="finalTime" class="big-time" style="display:inline;">0</span> วินาที</p>
+    <p id="newBestLabel" class="new-best"></p>
+    <button class="btn" id="retryBtn" style="margin-top:12px; width:100%;">🔁 เล่นใหม่</button>
+  </div>
+</div>
+
+<script src="dodge.js"></script>
+</body>
+</html>
