@@ -4,7 +4,24 @@ const ARENA_NPC_COUNT = 12; // สุ่มเลือกมาจากตั�
 const INFECT_INTERVAL_MS = 3000; // ทุกๆ เท่านี้ มีโอกาสติดเชื้อตัวใหม่เพิ่ม
 const CURE_AFTER_MS = 9000; // ติดเชื้อนานเท่านี้แล้วไม่โดนแตะ จะหายเองกลับเป็นปกติ
 const COLLISION_RADIUS = 30; // px ระยะที่ถือว่า "ชน" กัน
-const PLAYER_EMOJI = '🦸';
+const DODGE_WALLET_KEY = 'dodgeWallet_v1';
+const SKIN_PRICE = 3;
+
+// สกินฮีโร่ — ตัวแรกฟรี ที่เหลือซื้อด้วยเหรียญ (เหรียญได้จากการเล่นจบแต่ละรอบ)
+const SKINS = [
+  { key: 'hero', emoji: '🦸', price: 0 },
+  { key: 'ninja', emoji: '🥷', price: SKIN_PRICE },
+  { key: 'wizard', emoji: '🧙', price: SKIN_PRICE },
+  { key: 'robot', emoji: '🤖', price: SKIN_PRICE },
+  { key: 'fairy', emoji: '🧚', price: SKIN_PRICE },
+  { key: 'vampire', emoji: '🧛', price: SKIN_PRICE },
+  { key: 'knight', emoji: '🤺', price: SKIN_PRICE },
+  { key: 'astronaut', emoji: '👨‍🚀', price: SKIN_PRICE },
+  { key: 'villain', emoji: '🦹', price: SKIN_PRICE },
+  { key: 'king', emoji: '🤴', price: SKIN_PRICE },
+];
+
+let wallet = { coins: 0, owned: ['hero'], selected: 'hero' };
 
 // รายชื่อตัวละคร 37 ตัว (ชื่อภาษาอังกฤษตามที่น้องตังขอ)
 const CHARACTERS = [
@@ -44,6 +61,60 @@ function loadBest() {
 }
 function saveBest(sec) {
   localStorage.setItem(DODGE_BEST_KEY, String(sec));
+}
+
+function loadWallet() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(DODGE_WALLET_KEY));
+    if (saved) wallet = saved;
+  } catch (e) { /* เริ่มใหม่ถ้าอ่านไม่ได้ */ }
+}
+function saveWallet() {
+  localStorage.setItem(DODGE_WALLET_KEY, JSON.stringify(wallet));
+}
+
+function currentSkinEmoji() {
+  const skin = SKINS.find((s) => s.key === wallet.selected) || SKINS[0];
+  return skin.emoji;
+}
+
+function renderSkinShop() {
+  const grid = el('skinGrid');
+  if (!grid) return;
+  grid.innerHTML = '';
+  SKINS.forEach((skin) => {
+    const owned = wallet.owned.includes(skin.key);
+    const card = document.createElement('button');
+    card.className = 'skin-card';
+    if (owned && wallet.selected === skin.key) card.classList.add('selected');
+    if (!owned) card.classList.add('locked');
+    if (!owned && wallet.coins < skin.price) card.classList.add('cannot-afford');
+    card.innerHTML = `<span class="skin-emoji">${skin.emoji}</span>${
+      owned ? (wallet.selected === skin.key ? 'ใช้อยู่' : 'เลือก') : `🔒 ${skin.price} เหรียญ`
+    }`;
+    card.addEventListener('click', () => onSkinClick(skin));
+    grid.appendChild(card);
+  });
+}
+
+function onSkinClick(skin) {
+  const owned = wallet.owned.includes(skin.key);
+  if (owned) {
+    wallet.selected = skin.key;
+  } else {
+    if (wallet.coins < skin.price) return;
+    wallet.coins -= skin.price;
+    wallet.owned.push(skin.key);
+    wallet.selected = skin.key;
+  }
+  saveWallet();
+  renderSkinShop();
+  updateCoinDisplay();
+}
+
+function updateCoinDisplay() {
+  const coinLabel = el('coinCount');
+  if (coinLabel) coinLabel.textContent = String(wallet.coins);
 }
 
 function randInt(min, max) {
@@ -141,7 +212,7 @@ function startGame() {
   const playerEl = document.createElement('div');
   playerEl.className = 'player';
   playerEl.id = 'playerEl';
-  playerEl.textContent = PLAYER_EMOJI;
+  playerEl.textContent = currentSkinEmoji();
   playerEl.style.left = `${state.playerX}px`;
   playerEl.style.top = `${state.playerY}px`;
   arena.appendChild(playerEl);
@@ -206,8 +277,17 @@ function endGame() {
   const best = loadBest();
   const isNewBest = finalSec > best;
   if (isNewBest) saveBest(finalSec);
+
+  // รอดนานเท่าไหร่ ได้เหรียญเท่านั้น (ทุก 5 วินาที = 1 เหรียญ, อย่างน้อย 1 เหรียญถ้ารอดเกิน 1 วิ)
+  const earnedCoins = finalSec > 0 ? Math.max(1, Math.floor(finalSec / 5)) : 0;
+  wallet.coins += earnedCoins;
+  saveWallet();
+  renderSkinShop();
+  updateCoinDisplay();
+
   el('finalTime').textContent = String(finalSec);
   el('newBestLabel').textContent = isNewBest ? '🌟 สถิติใหม่!' : '';
+  el('coinEarnedLabel').textContent = `🪙 ได้เหรียญเพิ่ม ${earnedCoins} เหรียญ`;
   el('bestTime').textContent = String(loadBest());
   el('gameOverModal').style.display = 'flex';
 }
@@ -251,7 +331,10 @@ function movePlayerTo(e) {
 }
 
 function init() {
+  loadWallet();
   el('bestTime').textContent = String(loadBest());
+  updateCoinDisplay();
+  renderSkinShop();
   el('startDodgeBtn').addEventListener('click', startGame);
   el('retryBtn').addEventListener('click', startGame);
 }

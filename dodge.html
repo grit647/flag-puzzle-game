@@ -33,6 +33,7 @@
       <span style="font-weight:800; font-size:18px;" id="heartsDisplay">❤️❤️❤️</span>
       <span style="font-weight:700; color:#475569;">⏱ รอดมา: <span id="survivalTime">0</span> วิ</span>
       <span style="font-weight:700; color:#b45309;">🏆 สถิติ: <span id="bestTime">0</span> วิ</span>
+      <span style="font-weight:700; color:#ca8a04;">🪙 เหรียญ: <span id="coinCount">0</span></span>
     </div>
     <button class="btn" id="startDodgeBtn" style="width:100%; margin-top:10px;">▶️ เริ่มเกม</button>
   </div>
@@ -40,6 +41,11 @@
   <div class="panel">
     <div id="dodgeArena" class="dodge-arena"></div>
     <p class="hint">ลาก/แตะค้างที่ตัวละครของเราแล้วลากหลบตัวติดเชื้อ (มีหัวใจลอยอยู่ด้านบน)</p>
+  </div>
+
+  <div class="panel">
+    <label style="display:block; margin-bottom:8px;">🛍️ ร้านสกินฮีโร่ (ชิ้นละ 3 เหรียญ):</label>
+    <div id="skinGrid" class="skin-grid"></div>
   </div>
 
   <footer>เล่นได้ฟรี ไม่เก็บข้อมูลขึ้นเซิร์ฟเวอร์ — สถิติบันทึกไว้ในเครื่องนี้เท่านั้น</footer>
@@ -50,6 +56,7 @@
     <h2>💥 ติดเชื้อแล้ว!</h2>
     <p>รอดมาได้ <span id="finalTime" class="big-time" style="display:inline;">0</span> วินาที</p>
     <p id="newBestLabel" class="new-best"></p>
+    <p id="coinEarnedLabel" style="color:#b45309; font-weight:700;"></p>
     <button class="btn" id="retryBtn" style="margin-top:12px; width:100%;">🔁 เล่นใหม่</button>
   </div>
 </div>
