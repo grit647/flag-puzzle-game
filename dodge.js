@@ -7,6 +7,14 @@ const COLLISION_RADIUS = 30; // px ระยะที่ถือว่า "ช�
 const DODGE_WALLET_KEY = 'dodgeWallet_v1';
 const SKIN_PRICE = 3;
 
+// บอสตัวร้าย — น่ากลัวกว่าตัวติดเชื้อธรรมดา โผล่มาเป็นระยะๆ แตะแล้วจบเกมทันที
+const BOSS_EMOJI = '👹';
+const BOSS_NAME = 'Boss';
+const BOSS_SPAWN_INTERVAL_MS = 16000; // ทุกๆ เท่านี้ มีโอกาสที่บอสจะโผล่มา
+const BOSS_SPAWN_CHANCE = 0.6;
+const BOSS_VISIBLE_MS = 6000; // โผล่มาอยู่ได้นานเท่านี้ ถ้าไม่โดนแตะจะหายไปเอง
+const BOSS_COLLISION_RADIUS = 34;
+
 // สกินฮีโร่ — ตัวแรกฟรี ที่เหลือซื้อด้วยเหรียญ (เหรียญได้จากการเล่นจบแต่ละรอบ)
 const SKINS = [
   { key: 'hero', emoji: '🦸', price: 0 },
@@ -54,6 +62,9 @@ let state = {
   moveIntervals: [],
   infectInterval: null,
   collideInterval: null,
+  boss: null,       // { el, x, y, visibleUntil } หรือ null ถ้ายังไม่โผล่
+  bossSpawnInterval: null,
+  bossHideTimeout: null,
 };
 
 function loadBest() {
@@ -234,6 +245,12 @@ function startGame() {
   // เช็คว่าติดเชื้อนานเกินไปหรือยัง ให้หายเอง
   state.collideInterval = setInterval(checkCollisions, 150);
 
+  // บอสตัวร้าย — มีโอกาสโผล่มาเป็นระยะๆ
+  state.boss = null;
+  state.bossSpawnInterval = setInterval(() => {
+    if (Math.random() < BOSS_SPAWN_CHANCE) spawnBoss();
+  }, BOSS_SPAWN_INTERVAL_MS);
+
   state.timerInterval = setInterval(() => {
     state.survivalSec = Math.floor((Date.now() - state.startTime) / 1000);
     el('survivalTime').textContent = String(state.survivalSec);
@@ -255,6 +272,52 @@ function checkCollisions() {
       takeHit(npc);
     }
   });
+  if (state.boss) {
+    const dx = state.boss.x - state.playerX;
+    const dy = state.boss.y - state.playerY;
+    if (Math.hypot(dx, dy) < BOSS_COLLISION_RADIUS) {
+      bossHit();
+    }
+  }
+}
+
+// ----- บอสตัวร้าย -----
+function spawnBoss() {
+  if (state.boss) return; // มีอยู่แล้ว ไม่ซ้อน
+  const arena = el('dodgeArena');
+  const { w, h } = arenaSize();
+  const bossEl = document.createElement('div');
+  bossEl.className = 'npc boss';
+  bossEl.textContent = BOSS_EMOJI;
+  bossEl.title = BOSS_NAME;
+  const x = randInt(40, w - 40);
+  const y = randInt(40, h - 40);
+  bossEl.style.left = `${x}px`;
+  bossEl.style.top = `${y}px`;
+  arena.appendChild(bossEl);
+  state.boss = { el: bossEl, x, y };
+
+  clearTimeout(state.bossHideTimeout);
+  state.bossHideTimeout = setTimeout(hideBoss, BOSS_VISIBLE_MS);
+}
+
+function hideBoss() {
+  if (!state.boss) return;
+  state.boss.el.remove();
+  state.boss = null;
+}
+
+function bossHit() {
+  hideBoss();
+  state.hearts = 0;
+  updateHeartsDisplay();
+  const playerEl = el('playerEl');
+  if (playerEl) {
+    playerEl.classList.remove('hit');
+    void playerEl.offsetWidth;
+    playerEl.classList.add('hit');
+  }
+  endGame();
 }
 
 function takeHit(npc) {
@@ -297,8 +360,11 @@ function stopGame() {
   clearInterval(state.timerInterval);
   clearInterval(state.infectInterval);
   clearInterval(state.collideInterval);
+  clearInterval(state.bossSpawnInterval);
+  clearTimeout(state.bossHideTimeout);
   state.moveIntervals.forEach((i) => clearInterval(i));
   state.moveIntervals = [];
+  hideBoss();
 }
 
 // ----- ลากตัวละครผู้เล่นด้วย Pointer Events -----

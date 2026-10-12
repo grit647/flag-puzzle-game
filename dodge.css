@@ -36,6 +36,18 @@
   50%      { filter: drop-shadow(0 0 10px #dc2626); }
 }
 
+.npc.boss {
+  width: 54px; height: 54px;
+  font-size: 44px;
+  line-height: 54px;
+  z-index: 5;
+  animation: boss-pulse 0.6s ease-in-out infinite;
+}
+@keyframes boss-pulse {
+  0%, 100% { transform: translate(-50%, -50%) scale(1); filter: drop-shadow(0 0 8px #7c3aed); }
+  50%      { transform: translate(-50%, -50%) scale(1.15); filter: drop-shadow(0 0 16px #7c3aed); }
+}
+
 .npc-hearts {
   position: absolute;
   top: -16px; left: 50%;
